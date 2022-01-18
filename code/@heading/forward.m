@@ -26,8 +26,34 @@ stimAcqGroups = obj.stimAcqGroups;
 stimTime = obj.stimTime;
 nParams = obj.nParams;
 
-% Scale the stimulus matrix by the gain parameters
-neuralSignal = stimulus*x(1:nParams-3)';
+%% IMPLEMENT THE NON-LINEAR MODEL OF HEADING RESPONSE HERE
+% In the code here, you would take the stimulus vector, and perform
+% manipulations upon it to yield the time-series prediction. For example,
+% you might
+% 1) Take the first-derivative of the continuous measure of heading
+% direction, and then ciruclarize it so that the vector reflects the
+% absolute magnitude of heading change in any given TR
+% 2) Scale this vector by the first parameter (to implement a "gain"
+% effect)
+% 3) Convolve the vector by an exponential decay kernel, with the
+% time-constant of the exponential decay under the control of the second
+% parameter of the model.
+% 4) Convolve the resultant vector by the HRF, with the shape of the hRF
+% under the control of the final 3 parameters of the model.
+
+% Break the parameters of x into named variables for code transparency
+gain = x(1);
+tau = x(2);
+
+% Scale the stimulus matrix by the gain parameter
+neuralSignal = stimulus*gain;
+
+% Here is some starter pseudo code for creating an exponential kernel
+%{
+    exponentialIRF=exp(-1/tau*timebase);
+    exponentialIRF=normalizeKernelArea(exponentialIRF);
+%}
+
 
 % Create the HRF
 switch obj.hrfType

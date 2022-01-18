@@ -26,50 +26,9 @@ function seeds = seeds(obj,data,vxs)
 % Derived vars
 totalVxs = size(data{1},1);
 
-% Obj variables
-stimulus = obj.stimulus;
-nParams = obj.nParams;
-
 % Generate default seeds
 x0 = obj.initial;
 seedMatrix = repmat(x0,totalVxs,1);
-
-% Generate the regression matrix, which is the forward model output for
-% each stimulus, assuming the typical gain.
-X = zeros(size(obj.dataTime,1),size(stimulus,2));
-for ss = 1:size(stimulus,2)
-    xp = x0;
-    xp(1:size(stimulus,2))=0;
-    xp(ss) = x0(ss);
-    X(:,ss) = forward(obj, xp);
-end
-
-% Silence warnings that may occur during the regression
-warningState = warning;
-warning('off','MATLAB:rankDeficientMatrix');
-
-
-% Loop over voxels/vertices and find a first guess for the amplitude params
-% using linear regression
-for ii = 1:length(vxs)
-    
-    % Get this time series
-    datats=catcell(2,cellfun(@(x) subscript(squish(x,1),{vxs(ii) ':'}),data,'UniformOutput',0))';
-    
-    % Apply the model cleaning step, which may include regression of
-    % nuisance components
-    datats = obj.clean(datats);
-    
-    % Perform the regression
-    beta = X\datats;
-    
-    % Store these params in the seed
-    seedMatrix(vxs(ii),1:nParams-3) = beta;
-    
-end    
-
-% Restore the warning state
-warning(warningState);
 
 % Put the seed matrix in a cell
 seeds = {seedMatrix};

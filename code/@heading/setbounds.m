@@ -31,9 +31,14 @@ nParams = obj.nParams;
 lb = nan(1,nParams);
 ub = nan(1,nParams);
 
-% The gain parameters are unbounded
-lb(1:nParams-3) = -Inf;             % gain
-ub(1:nParams-3) = Inf;              % gain
+% The gain parameter is unbounded
+lb(1) = -Inf;             % gain
+ub(1) = Inf;              % gain
+
+% The time-constant parameter is bounded by zero at the low end, and by 100
+% seconds at the high end
+lb(2) = 0;
+ub(2) = 100;
 
 % The HRF shape parameters vary by model type
 switch obj.hrfType

@@ -149,9 +149,11 @@ classdef heading < handle
             % be fit with its own gain parameter. Record how many there are
             nStimTypes = size(stimulus{1},1);
             
-            % The number of params is the number of stim types, plus three
-            % for the form of the HRF
-            obj.nParams = nStimTypes+3;
+            % There are 5 parameters, corresponding to:
+            % - gain
+            % - time-constant
+            % - 3 parameters of the FLOBS HRF
+            obj.nParams = 5;
             
             % Define the stimLabels
             if ~isempty(p.Results.stimLabels)
