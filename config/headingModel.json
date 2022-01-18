@@ -11,5 +11,18 @@
 		"type": "include",
 		"update": "",
 		"url": ""
+	},
+        {
+		"flavor": "",
+		"hook": "",
+		"importance": "",
+		"localHookTemplate": "config/headingModelLocalHookTemplate.m",
+		"name": "headingModel",
+		"pathPlacement": "append",
+		"subfolder": "code",
+		"toolboxRoot": "",
+		"type": "git",
+		"update": "",
+		"url": "https://github.com/gkaguirrelab/headingModel.git"
 	}
 ]
