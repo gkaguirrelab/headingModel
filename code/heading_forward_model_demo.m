@@ -1,9 +1,13 @@
 % load stimulus and fMRI data
 % tbUseProject('headingModel')
-load('sub-00_stimulus_data.mat','stimulus','data');
+
+fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),'data','sub-00_stimulus_data.mat');
+load(fileName,'stimulus','data')
 tr=2;
+
 %% Call the forwardModel
 results = forwardModel(data,stimulus,tr,'modelClass','heading');
+
 % Show the results figures
 figFields = fieldnames(results.figures);
 if ~isempty(figFields)
