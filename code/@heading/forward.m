@@ -45,15 +45,20 @@ nParams = obj.nParams;
 gain = x(1);
 tau = x(2);
 
+% Here is where you would turn the continuous measure of heading into a
+% vector of heading change.
+headingChange = stimulus;
+
 % Scale the stimulus matrix by the gain parameter
-neuralSignal = stimulus*gain;
+neuralSignal = headingChange*gain;
 
 % Here is some starter pseudo code for creating an exponential kernel
 %{
     exponentialIRF=exp(-1/tau*timebase);
     exponentialIRF=normalizeKernelArea(exponentialIRF);
 %}
-
+% Here is where you would convolve the neural signal by an exponential
+% kernel
 
 % Create the HRF
 switch obj.hrfType
