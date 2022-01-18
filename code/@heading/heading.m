@@ -1,4 +1,4 @@
-classdef eventGain < handle
+classdef heading < handle
     
     properties (Constant)
         
@@ -7,8 +7,7 @@ classdef eventGain < handle
         
         % A description of the model
         description = ...
-            ['Find the gain for each stimulus component, \n' ...
-            'and the parameters of an HRF model.\n'];
+            ['A model of neural response to change in heading.\n'];
     end
     
     % Private properties
@@ -113,7 +112,7 @@ classdef eventGain < handle
     methods
         
         % Constructor
-        function obj = eventGain(data,stimulus,tr,varargin)
+        function obj = heading(data,stimulus,tr,varargin)
             
             % instantiate input parser
             p = inputParser; p.KeepUnmatched = false;
