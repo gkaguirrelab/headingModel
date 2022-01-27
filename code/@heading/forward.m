@@ -47,7 +47,6 @@ tau = x(2);
 
 % Here is where you would turn the continuous measure of heading into a
 % vector of heading change: range: -pi to pi.
-
 headingChange=cellfun(@angdiff, stimulus,'UniformOutput',false);
 % covert to absolute value: abs(-angdiff) and add 0 heading change for the
 % first TR to match fMRI timeseries
