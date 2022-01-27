@@ -49,6 +49,11 @@ tau = x(2);
 % vector of heading change: range: -pi to pi.
 
 headingChange=cellfun(@angdiff, stimulus,'UniformOutput',false);
+% covert to absolute value: abs(-angdiff) and add 0 heading change for the
+% first TR to match fMRI timeseries
+for i = 1:length(headingChange)
+    headingChange{i} = [0, abs(headingChange{i})];
+end
 
 % Scale the stimulus matrix by the gain parameter
 neuralSignal = headingChange*gain;
