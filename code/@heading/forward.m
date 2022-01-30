@@ -44,16 +44,15 @@ nParams = obj.nParams;
 % Break the parameters of x into named variables for code transparency
 gain = x(1);
 tau = x(2);
-
 % Here is where you would turn the continuous measure of heading into a
 % vector of heading change: range: -pi to pi.
-headingChange=cellfun(@angdiff, stimulus,'UniformOutput',false);
+headingChange = zeros(size(stimulus),class(stimulus));
 % covert to absolute value: abs(-angdiff) and add 0 heading change for the
 % first TR to match fMRI timeseries
-for i = 1:length(headingChange)
-    headingChange{i} = [0, abs(headingChange{i})];
+for run = 1:max(stimAcqGroups)
+    temp = stimulus(stimAcqGroups==run);
+    headingChange(stimAcqGroups==run,:) = [0;abs(angdiff(temp))];
 end
-
 % Scale the stimulus matrix by the gain parameter
 neuralSignal = headingChange*gain;
 
