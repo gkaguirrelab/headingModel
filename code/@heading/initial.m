@@ -6,11 +6,10 @@ function x0 = initial(obj)
 %
 % Description:
 %   Initial values for the prf_timeShift model. Rationale is as follows:
-%       x, y :  Center of the stimulus
-%       sigma:  1 or 10 pixels, depending upon obj.scale
-%       gain :  Set by obj.typicalGain
-%       exp  :  Locked to 0.05, following Benson et al, 2018, HCP 7T data
-%       shift:  Zero HRF temporal shift      
+% - gain
+% - exponent
+% - cardinal multiplier
+% - time-constant
 %
 % Inputs:
 %   none
@@ -32,7 +31,9 @@ x0 = zeros(1,nParams);
 
 % Assemble X0
 x0(1) = typicalGain; % gain
-x0(2) = 1;           % time-constant of the exponential decay in seconds
+x0(2) = 1;           % exponent
+x0(3) = 1;           % cardinal multiplier
+x0(4) = 0.01;        % time-constant of the exponential decay in seconds
 
 switch obj.hrfType
     case 'flobs'

@@ -6,11 +6,10 @@ function setbounds(obj)
 %
 % Description:
 %   Bounds for the prf_timeShift model. Rationale is as follows:
-%       x, y :  Stimulus edges +-50%
-%       sigma:  1/2 stimulus width
-%       gain :  Positive values only
-%       exp  :  Locked to 0.05, following Benson et al, 2018, HCP 7T data
-%       shift:  HRF temporal shift +- 3 seconds.       
+% - gain
+% - exponent
+% - cardinal multiplier
+% - time-constant
 %
 %   These are specified as 1 x nParams vectors.
 %
@@ -35,10 +34,20 @@ ub = nan(1,nParams);
 lb(1) = -Inf;             % gain
 ub(1) = Inf;              % gain
 
-% The time-constant parameter is bounded by zero at the low end, and by 100
-% seconds at the high end
-lb(2) = 0;
-ub(2) = 100;
+% Raise the heading change to an exponent to support compressive /
+% expansive non-linearities
+lb(2) = 0.1;             % gain
+ub(2) = 3;              % gain
+
+% Enhance the value of direction changes close to the cardinal meridians
+lb(3) = 0.5;             % gain
+ub(3) = 3;              % gain
+
+% The time-constant parameter is bounded by zero at the low end, and by 2
+% seconds at the high end. We set 2 as the upper bound to avoid colliding
+% with the HRF model
+lb(4) = 0.01;
+ub(4) = 2;
 
 % The HRF shape parameters vary by model type
 switch obj.hrfType

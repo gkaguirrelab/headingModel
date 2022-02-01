@@ -151,9 +151,11 @@ classdef heading < handle
             
             % There are 5 parameters, corresponding to:
             % - gain
+            % - exponent
+            % - cardinal multiplier
             % - time-constant
             % - 3 parameters of the FLOBS HRF
-            obj.nParams = 5;
+            obj.nParams = 7;
             
             % Define the stimLabels
             if ~isempty(p.Results.stimLabels)
