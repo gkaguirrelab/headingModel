@@ -27,26 +27,31 @@ stimTime = obj.stimTime;
 nParams = obj.nParams;
 dataTime = obj.dataTime;
 
-%% IMPLEMENT THE NON-LINEAR MODEL OF HEADING RESPONSE HERE
-% In the code here, you would take the stimulus vector, and perform
-% manipulations upon it to yield the time-series prediction. For example,
-% you might
-% 1) Take the first-derivative of the continuous measure of heading
-% direction, and then ciruclarize it so that the vector reflects the
-% absolute magnitude of heading change in any given TR
-% 2) Scale this vector by the first parameter (to implement a "gain"
-% effect)
-% 3) Convolve the vector by an exponential decay kernel, with the
-% time-constant of the exponential decay under the control of the second
-% parameter of the model.
-% 4) Convolve the resultant vector by the HRF, with the shape of the hRF
-% under the control of the final 3 parameters of the model.
-
 % Break the parameters of x into named variables for code transparency
+
+% These are the heading change variables
 gain = x(1);
 epsilon = x(2);
 beta = x(3);
 tau = x(4);
+
+% Parameters 5 - 13 are the amplitudes on the Gaussian direction filter
+% bank.
+
+
+%% Build a model of absolute heading direction
+% To start we will model a single preferred heading directon with a
+% circular gaussian of width sigma, and orientation of alpha, and amplitude
+% gamma.
+nBins = 8;
+binSeparation = (2*pi/nBins);
+sigmaVal = binSeparation;
+neuralSignal = zeros(size(stimulus));
+binCenters = -pi:binSeparation:pi-binSeparation;
+for ii = 1:8
+    thisFilterResponse = x(5+ii) .* normpdf(angdiff(stimulus, repmat(binCenters(ii),size(stimulus))./sigmaVal));
+    neuralSignal = neuralSignal + thisFilterResponse;
+end
 
 % Define an empty heading change vector
 headingChange = zeros(size(stimulus),class(stimulus));
@@ -77,10 +82,10 @@ exponentialIRF = exp(-1/tau*dataTimeSingleAcq);
 exponentialIRF = exponentialIRF/sum(abs(exponentialIRF));
 
 % Apply the exponential kernel to the heading time series
-headingChange = conv2run(headingChange,exponentialIRF,stimAcqGroups);
+%headingChange = conv2run(headingChange,exponentialIRF,stimAcqGroups);
 
 % Scale the stimulus matrix by the gain parameter
-neuralSignal = headingChange*gain;
+neuralSignal = neuralSignal + headingChange*gain;
 
 % Create the HRF
 switch obj.hrfType

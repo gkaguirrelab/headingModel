@@ -34,6 +34,7 @@ x0(1) = typicalGain; % gain
 x0(2) = 1;           % exponent
 x0(3) = 1;           % cardinal multiplier
 x0(4) = 0.01;        % time-constant of the exponential decay in seconds
+x0(5:5+8) = 0;       % zero initial preference for absolute direction
 
 switch obj.hrfType
     case 'flobs'

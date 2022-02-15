@@ -149,13 +149,14 @@ classdef heading < handle
             % be fit with its own gain parameter. Record how many there are
             nStimTypes = size(stimulus{1},1);
             
-            % There are 5 parameters, corresponding to:
+            % These are the parameters, corresponding to:
             % - gain
             % - exponent
             % - cardinal multiplier
             % - time-constant
+            % - 8 parameters for an absolute heading direction model
             % - 3 parameters of the FLOBS HRF
-            obj.nParams = 7;
+            obj.nParams = 4 + 8 + 3;
             
             % Define the stimLabels
             if ~isempty(p.Results.stimLabels)

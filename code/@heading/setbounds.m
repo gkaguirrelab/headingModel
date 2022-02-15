@@ -49,6 +49,12 @@ ub(3) = 3;              % gain
 lb(4) = 0.01;
 ub(4) = 2;
 
+% These are the parameters that define a filter bank of absolute effect of
+% preferred heading direction
+lb(5:5+8) = -Inf; % gain of this filter
+ub(5:5+8) = Inf;  % gain of this filter
+
+
 % The HRF shape parameters vary by model type
 switch obj.hrfType
     case 'flobs'
