@@ -30,6 +30,9 @@ classdef heading < handle
     % Calling function can see, but not modify
     properties (SetAccess=private)
         
+        % The number of bins in the heading direction filter bank
+        nFilterBins
+
         % The number of parameters in the model
         nParams
         
@@ -127,6 +130,7 @@ classdef heading < handle
             p.addParameter('payload',{},@iscell);
             p.addParameter('polyDeg',[],@isnumeric);
             p.addParameter('typicalGain',300,@isscalar);
+            p.addParameter('nFilterBins',8,@isscalar);
             p.addParameter('hrfType','flobs',@ischar);            
             p.addParameter('hrfSearch',true,@islogical);            
             p.addParameter('verbose',true,@islogical);
@@ -156,7 +160,8 @@ classdef heading < handle
             % - time-constant
             % - 8 parameters for an absolute heading direction model
             % - 3 parameters of the FLOBS HRF
-            obj.nParams = 4 + 8 + 3;
+            obj.nFilterBins = p.Results.nFilterBins;
+            obj.nParams = 4 + p.Results.nFilterBins + 3;
             
             % Define the stimLabels
             if ~isempty(p.Results.stimLabels)

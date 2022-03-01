@@ -25,15 +25,16 @@ stimulus = obj.stimulus;
 stimAcqGroups = obj.stimAcqGroups;
 stimTime = obj.stimTime;
 nParams = obj.nParams;
+nFilterBins = obj.nFilterBins;
 dataTime = obj.dataTime;
 
 % Break the parameters of x into named variables for code transparency
 
 % These are the heading change variables
-gain = x(1);
-epsilon = x(2);
-beta = x(3);
-tau = x(4);
+gain = x(1);        % Gain of the adaptation effect
+epsilon = x(2);     % Non-linear exponent of the neural signal
+beta = x(3);        % Currently unused
+tau = x(4);         % Time constant of the exponential adaptation integrator
 
 % Parameters 5 - 13 are the amplitudes on the Gaussian direction filter
 % bank.
@@ -43,13 +44,12 @@ tau = x(4);
 % To start we will model a single preferred heading directon with a
 % circular gaussian of width sigma, and orientation of alpha, and amplitude
 % gamma.
-nBins = 8;
-binSeparation = (2*pi/nBins);
+binSeparation = (2*pi/nFilterBins);
 sigmaVal = binSeparation;
 neuralSignal = zeros(size(stimulus));
-binCenters = -pi:binSeparation:pi-binSeparation;
-for ii = 1:8
-    thisFilterResponse = x(5+ii) .* normpdf(angdiff(stimulus, repmat(binCenters(ii),size(stimulus))./sigmaVal));
+binCenters = 0:binSeparation:(2*pi)-binSeparation;
+for ii = 1:nFilterBins
+    thisFilterResponse = x(4+ii) .* normpdf(angdiff(stimulus, repmat(binCenters(ii),size(stimulus))./sigmaVal));
     neuralSignal = neuralSignal + thisFilterResponse;
 end
 

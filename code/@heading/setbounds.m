@@ -25,6 +25,7 @@ function setbounds(obj)
 
 % Obj variables
 nParams = obj.nParams;
+nFilterBins = obj.nFilterBins;
 
 % Define outputs
 lb = nan(1,nParams);
@@ -36,23 +37,23 @@ ub(1) = Inf;              % gain
 
 % Raise the heading change to an exponent to support compressive /
 % expansive non-linearities
-lb(2) = 0.1;             % gain
-ub(2) = 3;              % gain
+lb(2) = 0.1;             % exponent
+ub(2) = 3;              % exponent
 
 % Enhance the value of direction changes close to the cardinal meridians
-lb(3) = 0.5;             % gain
-ub(3) = 3;              % gain
+lb(3) = 0;             % unused
+ub(3) = 0;              % unused
 
 % The time-constant parameter is bounded by zero at the low end, and by 2
 % seconds at the high end. We set 2 as the upper bound to avoid colliding
 % with the HRF model
-lb(4) = 0.01;
-ub(4) = 2;
+lb(4) = 0.01;          % time constant in seconds
+ub(4) = 15;            % time constant in seconds
 
 % These are the parameters that define a filter bank of absolute effect of
 % preferred heading direction
-lb(5:5+8) = -Inf; % gain of this filter
-ub(5:5+8) = Inf;  % gain of this filter
+lb(4+1:4+nFilterBins) = -Inf; % gain of this filter
+ub(4+1:4+nFilterBins) = Inf;  % gain of this filter
 
 
 % The HRF shape parameters vary by model type
