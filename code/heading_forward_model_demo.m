@@ -16,8 +16,11 @@ tr=2;
 % By default, analyze them all
 vxs = 1:size(data{1},1);
 
+% How many filter bins do I want
+nFilterBins = 8;
+
 % Call the forwardModel
-results = forwardModel(data,stimulus,tr,'modelClass','heading','vxs',vxs);
+results = forwardModel(data,stimulus,tr,'modelClass','heading','vxs',vxs,'nFilterBins',nFilterBins);
 
 % Show the results figures
 figFields = fieldnames(results.figures);
