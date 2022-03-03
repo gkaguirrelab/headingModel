@@ -21,7 +21,7 @@ nFilterBins = 8;
 
 % Call the forwardModel
 results = forwardModel(data,stimulus,tr,'modelClass','heading','vxs',vxs,'nFilterBins',nFilterBins);
-
+save(['./results/' sub '_forwardModel_output_RSC.mat'],'results');
 % Show the results figures
 figFields = fieldnames(results.figures);
 if ~isempty(figFields)
