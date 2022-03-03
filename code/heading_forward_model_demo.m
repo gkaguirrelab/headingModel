@@ -16,12 +16,12 @@ tr=2;
 % By default, analyze them all
 vxs = 1:size(data{1},1);
 
-% Create a modelOpts variable to specify the number of filterbins
-modelOpts = {'nFilterBins',8};
+% How many filter bins do I want
+nFilterBins = 8;
 
 % Call the forwardModel
-results = forwardModel(data,stimulus,tr,'modelClass','heading','vxs',vxs,'modelOpts',modelOpts);
-
+results = forwardModel(data,stimulus,tr,'modelClass','heading','vxs',vxs,'nFilterBins',nFilterBins);
+save(['./results/' sub '_forwardModel_output_RSC.mat'],'results');
 % Show the results figures
 figFields = fieldnames(results.figures);
 if ~isempty(figFields)
