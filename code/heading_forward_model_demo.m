@@ -4,7 +4,7 @@
 % The mat file we need is located in the "data" directory. Construct a path
 % to this file, starting with the location of this script.
 sub='sub-08';
-fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),'data',[sub '_stimulus_data.mat']);
+fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),'data',[sub '_city1A_stimulus_data_RSC-100.mat']);
 
 % Load the stimulus and data variables
 load(fileName,'stimulus','data')
