@@ -11,6 +11,15 @@ fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),'data',[sub '_ci
 % Load the stimulus and data variables
 load(fileName,'stimulus','data')
 
+%% Optional
+% This code replaces the actual stimulus with a simplified version, in
+% which the heading direction rotates through the available angles over a
+% cycle time of 45 TRs.
+for ii=1:length(stimulus)
+    thisVec = sin(2*pi*linspace(0,7.3,330)).*pi+pi;
+    stimulus{ii} = thisVec;
+end
+
 % The TR of the experiment, in seconds
 tr=2;
 
@@ -24,19 +33,28 @@ model = heading(data,stimulus,tr,modelOpts{:});
 % Get the x0 param values
 x0 = model.initial;
 
-% We are working in % change units, so set the first (gain) parameter to a
-% typical percent change value
-x0(1) = 1.5;
+% We are working in % change units, so set the first (gain) parameter of
+% the adaptation effect to a value in units of % change (something between
+% 0 and 0.5 would be typical)
+x0(1) = 0;
 
 % The filter bin parameters are at index positions [5:5+nFilterBins-1]. Set
 % a value for one of the bins
-x0(7) = 1;
+myBin = 7;
+x0(myBin) = 1;
 
 % Get the simulated signal for the x params
 simSignal = model.forward(x0);
 
 % Plot this
-plot(simSignal);
+plot(simSignal(1:330));
+hold on
+binSeparation = (2*pi/nFilterBins);
+binCenters = 0:binSeparation:(2*pi)-binSeparation;
+myPreferedHeading = zeros(1,330);
+myPreferedHeading( abs(thisVec - binCenters(myBin-4)) < pi/8 ) = 1;
+myPreferedHeading = myPreferedHeading .* max(simSignal(1:330));
+plot(myPreferedHeading);
 
 % Let's see if we can recover these parameters. First, create a data
 % variable from the simSignal
