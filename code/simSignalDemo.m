@@ -12,11 +12,23 @@ fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),'data',[sub '_ci
 load(fileName,'stimulus','data')
 
 %% Optional
-% This code replaces the actual stimulus with a simplified version, in
+% This code replaces the actual stimulus with a simplified version. The
+% heading direction is set to be pi/2 a, in
 % which the heading direction rotates through the available angles over a
 % cycle time of 45 TRs.
+simBins = 45;
+preferredDirection = pi/2;
+binSeparation = (2*pi/simBins);
+binCenters = 0:binSeparation:(2*pi)-binSeparation;
+[~,idx]=min(abs(binCenters - preferredDirection));
+preferredDirection = binCenters(idx);
+nonPreferredDirections = binCenters((1:simBins)~=idx);
+thisVec = nan(1,330);
+idx = logical(zeros(1,330));
+idx(1:simBins:330) = 1;
+thisVec(idx) = preferredDirection;
+thisVec(~idx) = datasample(nonPreferredDirections,sum(~idx));
 for ii=1:length(stimulus)
-    thisVec = sin(2*pi*linspace(0,7.3,330)).*pi+pi;
     stimulus{ii} = thisVec;
 end
 
@@ -40,21 +52,33 @@ x0(1) = 0;
 
 % The filter bin parameters are at index positions [5:5+nFilterBins-1]. Set
 % a value for one of the bins
-myBin = 7;
+binSeparation = (2*pi/nFilterBins);
+binCenters = 0:binSeparation:(2*pi)-binSeparation;
+[~,idx] = min(abs(binCenters - preferredDirection));
+myBin = 4+idx;
 x0(myBin) = 1;
 
 % Get the simulated signal for the x params
 simSignal = model.forward(x0);
 
 % Plot this
-plot(simSignal(1:330));
+figure
+subplot(3,1,1);
+plot(thisVec,'-k');
 hold on
-binSeparation = (2*pi/nFilterBins);
-binCenters = 0:binSeparation:(2*pi)-binSeparation;
-myPreferedHeading = zeros(1,330);
-myPreferedHeading( abs(thisVec - binCenters(myBin-4)) < pi/8 ) = 1;
-myPreferedHeading = myPreferedHeading .* max(simSignal(1:330));
-plot(myPreferedHeading);
+idx = find(thisVec==preferredDirection);
+plot(idx,preferredDirection,'*r')
+xlabel('time [TRs]');
+ylabel('heading [rads]');
+title(sprintf('simulated heading direction (bins = %d)',simBins));
+set(gca,'YTick',0:pi/2:2*pi) 
+set(gca,'YTickLabel',{'0','pi/2','pi','3*pi/2','2*pi'})
+
+subplot(3,1,2);
+plot(simSignal(1:330));
+xlabel('time [TRs]');
+ylabel('BOLD response');
+title(sprintf('simulated BOLD response (bins = %d)',nFilterBins));
 
 % Let's see if we can recover these parameters. First, create a data
 % variable from the simSignal
@@ -69,6 +93,16 @@ results = forwardModel(data,stimulus,tr,'modelClass','heading','vxs',1,'modelOpt
 
 % Pull out the params
 x1 = results.params;
+
+% Obtain the model fit
+fitSignal = model.forward(x1);
+
+% Add this to the plot
+subplot(3,1,3);
+plot(fitSignal(1:330));
+xlabel('time [TRs]');
+ylabel('BOLD response');
+title(sprintf('fitted BOLD response (bins = %d)',nFilterBins));
 
 % Compare the simulated and recovered values
 fprintf('Overall gain [simulated vs recovered]: %2.2f vs. %2.2f \n',x0(1),x1(1));
