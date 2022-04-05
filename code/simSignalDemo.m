@@ -23,6 +23,11 @@ for ii=1:length(stimulus)
     stimulus{ii} = datasample(binCenters,nTRs);
 end
 
+% Set a preferredDirection, and store which bin in the simulated heading
+% direction is closest to the preferred direction
+preferredDirection = pi/2;
+[~,idx]=min(abs(binCenters - preferredDirection));
+preferredDirectionInHeadingVector = binCenters(idx);
 
 % The TR of the experiment, in seconds
 tr=2;
@@ -42,7 +47,6 @@ x0(1) = 0;
 
 % Pick a preferred direction, which is the bin center closest to the
 % preferred direction
-preferredDirection = pi/2;
 binSeparation = (2*pi/nFilterBins);
 binCenters = 0:binSeparation:(2*pi)-binSeparation;
 [~,idx]=min(abs(binCenters - preferredDirection));
@@ -63,7 +67,7 @@ subplot(4,1,1);
 thisVec = stimulus{1};
 plot(thisVec,'-k');
 hold on
-idx = find(thisVec==preferredDirection);
+idx = find(thisVec==preferredDirectionInHeadingVector);
 plot(idx,preferredDirection,'*r')
 xlabel('time [TRs]');
 ylabel('heading [rads]');
