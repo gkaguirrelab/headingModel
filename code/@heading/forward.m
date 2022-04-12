@@ -49,7 +49,8 @@ sigmaVal = binSeparation;
 neuralSignal = zeros(size(stimulus));
 binCenters = 0:binSeparation:(2*pi)-binSeparation;
 for ii = 1:nFilterBins
-    thisFilterResponse = x(4+ii) .* normpdf(angdiff(stimulus, repmat(binCenters(ii),size(stimulus))./sigmaVal));
+%     thisFilterResponse = x(4+ii) .* normpdf(angdiff(stimulus, repmat(binCenters(ii),size(stimulus))./sigmaVal));
+    thisFilterResponse = x(4+ii) .* circ_vmpdf(stimulus,binCenters(ii),binSeparation);
     neuralSignal = neuralSignal + thisFilterResponse;
 end
 

@@ -6,7 +6,8 @@
 
 % Load some example data and stimulus file to base the simulation upon
 sub='sub-08';
-fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),'data',[sub '_city1A_stimulus_data_bMask-city1AB-100.mat']);
+fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),['data/' sub] ...
+    ,[sub '_city1A_stimulus_data_bMask-city1AB-100.mat']);
 
 % Load the stimulus and data variables
 load(fileName,'stimulus','data')
@@ -25,7 +26,7 @@ end
 
 % Set a preferredDirection, and store which bin in the simulated heading
 % direction is closest to the preferred direction
-preferredDirection = pi/2;
+preferredDirection = 7*pi/4; %pi/2;
 [~,idx]=min(abs(binCenters - preferredDirection));
 preferredDirectionInHeadingVector = binCenters(idx);
 
@@ -51,7 +52,7 @@ binSeparation = (2*pi/nFilterBins);
 binCenters = 0:binSeparation:(2*pi)-binSeparation;
 [~,idx]=min(abs(binCenters - preferredDirection));
 preferredDirection = binCenters(idx);
-fprintf('The preferred direction is: %2.2f rads\n',preferredDirection)
+fprintf('The preferred direction is: %2.2f rads\n',180*preferredDirection/pi)
 
 % Set the parameter for the preferred direction to unity
 [~,idx] = min(abs(binCenters - preferredDirection));
