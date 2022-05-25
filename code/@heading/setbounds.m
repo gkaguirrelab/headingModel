@@ -48,7 +48,7 @@ ub(3) = 0;              % unused
 % seconds at the high end. We set 2 as the upper bound to avoid colliding
 % with the HRF model
 lb(4) = 0.01;          % time constant in seconds
-ub(4) = 15;            % time constant in seconds
+ub(4) = 2;            % time constant in seconds
 
 % These are the parameters that define a filter bank of absolute effect of
 % preferred heading direction
