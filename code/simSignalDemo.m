@@ -4,22 +4,29 @@
 % some noise, and testing if we can recover the model parameters
 %
 
-% Load some example data and stimulus file to base the simulation upon
+% Flags that control simulation properties
+useRealHeadingFlag = false;
+oneHotSimulationFlag = true;
+
+% Pick an example subject on which to base the demo
 sub='sub-08';
+
 % Load the stimulus and data variables
 fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),['data/' sub] ...
     ,[sub '_city1A_stimulus_data_bMask-city1AB-100.mat']);
 load(fileName,'stimulus','data')
-% 
-%% Simulated a heading direction
+
+
+%% Simulate a heading direction
+
 % This code replaces the actual stimulus with a fully randomized ordering
-% of heading values, sampled from a specified number of discrete headings.
+% of heading values, sampled from a specified number of discrete headings,
+% under the control of a flag
 nTRs = size(stimulus{1},2); % TRs per acquisition
 simBins = 16; % how many unique direction are there
 binSeparation = (2*pi/simBins);
 binCenters = 0:binSeparation:(2*pi)-binSeparation;
-realHD=0;
-if realHD==0
+if ~useRealHeadingFlag
     for ii=1:length(stimulus)
         stimulus{ii} = datasample(binCenters,nTRs);
     end
@@ -32,12 +39,13 @@ preferredDirection = pi/2; %2*binSeparation;%pi/2; %7*pi/4; %pi/2;
 preferredDirectionInHeadingVector = binCenters(idx);
 
 % The TR of the experiment, in seconds
-tr=2;
+tr = 2;
+
 % Define modelOpts
+nFixedParams = 2; % corresponding to the adaptation gain and epsilon
 nFilterBins = 16; % how many filters in the model
 filterWidth=360/nFilterBins;
-modelOpts = {'nFilterBins',nFilterBins};
-one_hot=0;
+modelOpts = {'nFilterBins',nFilterBins,'hrfSearch',false,'typicalGain',1};
 
 % Create a model object
 model = heading(data,stimulus,tr,modelOpts{:});
@@ -45,29 +53,24 @@ model = heading(data,stimulus,tr,modelOpts{:});
 % Get the x0 param values
 x0 = model.initial;
 
-% Set the gain of the adaptation effect to zero.
-x0(1) = 0;
-% 
-% % Pick a preferred direction, which is the bin center closest to the
-% % preferred direction
-binSeparation = (2*pi/nFilterBins);
-binCenters = 0:binSeparation:(2*pi)-binSeparation;
-[~,idx]=min(abs(binCenters - preferredDirection));
-preferredDirection = binCenters(idx);
-fprintf('The preferred direction is: %2.2f degree\n', ...
-    180*preferredDirection/pi)
+% Set the gain and epsiln of the adaptation effect to some values
+x0(1:2) = [0.5 1.2];
 
-% Set the parameter for the preferred direction to unity, all the other to
-% have values following circular gaussion profile
-% one hot encoding:
-% one_hot=[0,0,1,0,0,0,0,0];imagesc(one_hot);colormap(jet);axis off;colorbar
-
-[~,idx] = min(abs(binCenters - preferredDirection));
-myBin = 4+idx; % The first four parameters handle the adaptation model
-x0(myBin) = 1;
-% gaussian encoding: gau=circ_vmpdf(binCenters,preferredDirection,binSeparation); imagesc(gau');colormap(jet)
-if one_hot==0
-    x0(5:nFilterBins-1+5) = circ_vmpdf(binCenters,preferredDirection,binSeparation);
+% Two choices for modeling the heading direction effect: "one hot", or a
+% circular Gaussian distribution of amplitudes, under the control of a flag
+if oneHotSimulationFlag
+    % Pick a preferred bin, which is the bin center closest to the preferred
+    % direction
+    binSeparation = (2*pi/nFilterBins);
+    binCenters = 0:binSeparation:(2*pi)-binSeparation;
+    [~,idx]=min(abs(binCenters - preferredDirection));
+    preferredDirection = binCenters(idx);
+    fprintf('The preferred direction is: %2.2f degree\n', ...
+        180*preferredDirection/pi)
+    myBin = nFixedParams+idx; % The first four parameters handle the adaptation model
+    x0(myBin) = 1;
+else
+    x0(nFixedParams+1:nFilterBins+nFixedParams) = circ_vmpdf(binCenters,preferredDirection,binSeparation);
 end
 
 % Get the simulated signal for the x params
@@ -94,8 +97,8 @@ xlabel('time [TRs]');
 ylabel('BOLD response');
 title(sprintf('simulated BOLD response (bins = %d)',nFilterBins));
 
-%% Let's see if we can recover these parameters. First, create a data
-% variable from the simSignal
+%% Let's see if we can recover these parameters
+% First, create a data variable from the simSignal
 nAcq = size(data,2);
 nTRsPerAcq = length(simSignal)/nAcq;
 for ii=1:nAcq
@@ -120,9 +123,9 @@ title(sprintf('fitted BOLD response (bins = %d)',nFilterBins));
 
 % Compare the simulated and recovered values
 subplot(4,1,4);
-plot(binCenters,x0(5:5+nFilterBins-1),'-k');
+plot(binCenters,x0(nFixedParams+1:nFixedParams+nFilterBins),'-k');
 hold on
-plot(binCenters,x1(5:5+nFilterBins-1),'*r');
+plot(binCenters,x1(nFixedParams+1:nFixedParams+nFilterBins),'*r');
 set(gca,'XTick',0:pi/2:2*pi) 
 set(gca,'XTickLabel',{'0','pi/2','pi','3*pi/2','2*pi'})
 ylabel('model parameter');

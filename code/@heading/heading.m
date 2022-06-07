@@ -33,6 +33,10 @@ classdef heading < handle
         % The number of bins in the heading direction filter bank
         nFilterBins
 
+        % The number of parameters dedicated to components of the model
+        % other than the filter bank and the shape of the HRF
+        nFixedParams
+
         % The number of parameters in the model
         nParams
         
@@ -156,12 +160,11 @@ classdef heading < handle
             % These are the parameters, corresponding to:
             % - gain
             % - exponent
-            % - cardinal multiplier
-            % - time-constant
-            % - 8 parameters for an absolute heading direction model
+            % - a variable number of parameters for an absolute heading direction model
             % - 3 parameters of the FLOBS HRF
+            obj.nFixedParams = 2;
             obj.nFilterBins = p.Results.nFilterBins;
-            obj.nParams = 4 + p.Results.nFilterBins + 3;
+            obj.nParams = obj.nFixedParams + p.Results.nFilterBins + 3;
             
             % Define the stimLabels
             if ~isempty(p.Results.stimLabels)

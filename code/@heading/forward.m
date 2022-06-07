@@ -27,18 +27,14 @@ stimTime = obj.stimTime;
 nParams = obj.nParams;
 nFilterBins = obj.nFilterBins;
 dataTime = obj.dataTime;
+nFixedParams = obj.nFixedParams;
 
 % Break the parameters of x into named variables for code transparency
 
 % These are the heading change variables
-gain = x(1);        % Gain of the adaptation effect
+adaptGain = x(1);   % Gain of the adaptation effect
 epsilon = x(2);     % Non-linear exponent of the neural signal
-beta = x(3);        % Currently unused
-tau = x(4);         % Time constant of the exponential adaptation integrator
-
-% Parameters 5 - 13 are the amplitudes on the Gaussian direction filter
-% bank.
-
+%tau = x(3);         % Time constant of the temporal integration
 
 %% Build a model of absolute heading direction
 % To start we will model a single preferred heading directon with a
@@ -49,15 +45,24 @@ sigmaVal = binSeparation;
 neuralSignal = zeros(size(stimulus));
 binCenters = 0:binSeparation:(2*pi)-binSeparation;
 for ii = 1:nFilterBins
-    thisFilterResponse = x(4+ii) .* normpdf(angdiff(stimulus, repmat(binCenters(ii),size(stimulus))./sigmaVal));
+    thisFilterResponse = x(nFixedParams+ii) .* normpdf(angdiff(stimulus, repmat(binCenters(ii),size(stimulus))./sigmaVal));
     neuralSignal = neuralSignal + thisFilterResponse;
 end
 
 % Define an empty heading change vector
 headingChange = zeros(size(stimulus),class(stimulus));
 
+% Create an exponential kernel under the contol of tau (in units of
+% seconds)
+%exponentialIRF = exp(-1/tau*dataTimeSingleAcq);
+
+% Normalize the kernel to have unit initial value
+%exponentialIRF = exponentialIRF/exponentialIRF(1);
+
 % Loop over acquisitions and obtain the absolute, circular value of the
-% first derivative of the heeading vector
+% first derivative of the heading vector. At some stage, we should expand
+% this to handle integration over events further back in time, perhaps
+% under the influenve of 
 for run = 1:max(stimAcqGroups)
     temp = stimulus(stimAcqGroups==run);
     headingChange(stimAcqGroups==run,:) = [0;abs(angdiff(temp))];
@@ -68,24 +73,14 @@ end
 % parameter value of 1 provides a linear mapping).
 headingChange = headingChange.^epsilon;
 
-%% COULD IMPLEMENT HERE THE USE OF BETA TO ENHANCE THE EFFECT OF THE
-% cadinal meridians upon the neurall response
-
 % Obtain the temporal support for one acquisition
 dataTimeSingleAcq = dataTime(stimAcqGroups==1);
-
-% Create an exponential kernel under the contol of tau (in units of
-% seconds)
-exponentialIRF = exp(-1/tau*dataTimeSingleAcq);
-
-% Normalize the kernel to have unit area
-exponentialIRF = exponentialIRF/sum(abs(exponentialIRF));
 
 % Apply the exponential kernel to the heading time series
 %headingChange = conv2run(headingChange,exponentialIRF,stimAcqGroups);
 
 % Scale the stimulus matrix by the gain parameter
-neuralSignal = neuralSignal + headingChange*gain;
+neuralSignal = neuralSignal + headingChange*adaptGain;
 
 % Create the HRF
 switch obj.hrfType
