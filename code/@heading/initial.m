@@ -27,15 +27,16 @@ typicalGain = obj.typicalGain;
 nParams = obj.nParams;
 nFilterBins = obj.nFilterBins;
 
+nFixedParams = 2;
+
 % Assign the x0 variable
 x0 = zeros(1,nParams);
 
 % Assemble X0
 x0(1) = typicalGain; % gain
 x0(2) = 1;           % exponent
-x0(3) = 0;           % cardinal multiplier
-x0(4) = 1;        % time-constant of the exponential decay in seconds
-x0(4+1:4+nFilterBins) = 0;       % zero initial gain for direction filter bank
+%x0(3) = 1;        % time-constant of the exponential decay in seconds
+x0(nFixedParams+1:nFixedParams+nFilterBins) = 0;       % zero initial gain for direction filter bank
 
 switch obj.hrfType
     case 'flobs'
