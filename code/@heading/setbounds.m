@@ -27,11 +27,13 @@ function setbounds(obj)
 nParams = obj.nParams;
 nFilterBins = obj.nFilterBins;
 
+nFixedParams = 2;
+
 % Define outputs
 lb = nan(1,nParams);
 ub = nan(1,nParams);
 
-% The gain parameter is unbounded
+% The adaptation gain parameter is unbounded
 lb(1) = -Inf;             % gain
 ub(1) = Inf;              % gain
 
@@ -40,21 +42,15 @@ ub(1) = Inf;              % gain
 lb(2) = 0.1;             % exponent
 ub(2) = 3;              % exponent
 
-% Enhance the value of direction changes close to the cardinal meridians
-lb(3) = 0;             % unused
-ub(3) = 0;              % unused
-
 % The time-constant parameter is bounded by zero at the low end, and by 2
-% seconds at the high end. We set 2 as the upper bound to avoid colliding
-% with the HRF model
-lb(4) = 0.01;          % time constant in seconds
-ub(4) = 2;            % time constant in seconds
+% seconds at the high end. Currently unused
+%lb(3) = 0.01;          % time constant in seconds
+%ub(3) = 2;            % time constant in seconds
 
 % These are the parameters that define a filter bank of absolute effect of
 % preferred heading direction
-lb(4+1:4+nFilterBins) = -Inf; % gain of this filter
-ub(4+1:4+nFilterBins) = Inf;  % gain of this filter
-
+lb(nFixedParams+1:nFixedParams+nFilterBins) = -Inf; % gain of this filter
+ub(nFixedParams+1:nFixedParams+nFilterBins) = Inf;  % gain of this filter
 
 % The HRF shape parameters vary by model type
 switch obj.hrfType
