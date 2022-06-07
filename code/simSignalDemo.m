@@ -15,7 +15,7 @@ load(fileName,'stimulus','data')
 % This code replaces the actual stimulus with a fully randomized ordering
 % of heading values, sampled from a specified number of discrete headings.
 nTRs = size(stimulus{1},2); % TRs per acquisition
-simBins = 8; % how many unique direction are there
+simBins = 16; % how many unique direction are there
 binSeparation = (2*pi/simBins);
 binCenters = 0:binSeparation:(2*pi)-binSeparation;
 realHD=0;
@@ -34,7 +34,7 @@ preferredDirectionInHeadingVector = binCenters(idx);
 % The TR of the experiment, in seconds
 tr=2;
 % Define modelOpts
-nFilterBins = 8; % how many filters in the model
+nFilterBins = 16; % how many filters in the model
 filterWidth=360/nFilterBins;
 modelOpts = {'nFilterBins',nFilterBins};
 one_hot=0;
