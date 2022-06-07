@@ -8,7 +8,9 @@
 % to this file, starting with the location of this script.
 parcels = {'bMask', 'EVC', 'OPA', 'PPA', 'RSC', 'PHG', 'ERC', 'Hipp', 'Thal'...
     'VTC'};
-roi_mask='-city1AB-100';
+roi_mask='-100';
+train_dst = 'B';
+test_dst = 'A';
 nFilterBins = 16;
 n_par_workers=4;
 if isempty(gcp('nocreate')) && n_par_workers>1; parpool(n_par_workers); end
@@ -24,7 +26,7 @@ for sub_n = 8:8
         parcel=parcels{p};
 %         parcel='PHG';
         fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),['data/' sub], ...
-        [sub '_city1A_stimulus_data_' parcel roi_mask '.mat']);
+        [sub '_city1' train_dst '_stimulus_data_' parcel roi_mask '.mat']);
 
         % Load the stimulus and data variables
         load(fileName,'stimulus','data')
@@ -51,7 +53,7 @@ for sub_n = 8:8
 
         % Load the validation dataset
         fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),['data/' sub],...
-            [sub '_city1B_stimulus_data_' parcel roi_mask '.mat']);
+            [sub '_city1' test_dst '_stimulus_data_' parcel roi_mask '.mat']);
         load(fileName,'stimulus','data')
 
         % Re-create the model, now with the new stimulus and data
@@ -78,7 +80,8 @@ for sub_n = 8:8
 
         % save R2
         outFileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),'results',...
-            [sub '_city1A_forward-head-' num2str(nFilterBins) '_city1B_' parcel roi_mask '.mat']);
+            [sub '_city1' train_dst '_head-' num2str(nFilterBins) ...
+            '_city1' test_dst '_' parcel roi_mask '_nl.mat']);
         save(outFileName,'cv_R2','results');
     end
 end
