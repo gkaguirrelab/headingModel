@@ -8,7 +8,7 @@
 % to this file, starting with the location of this script.
 parcels = {'bMask', 'EVC', 'OPA', 'PPA', 'RSC', 'PHG', 'ERC', 'Hipp', 'Thal'...
     'VTC'};
-roi_mask='-100';
+roi_mask='';
 train_dst = 'B';
 test_dst = 'A';
 nFilterBins = 16;
@@ -81,7 +81,7 @@ for sub_n = 8:8
         % save R2
         outFileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),'results',...
             [sub '_city1' train_dst '_head-' num2str(nFilterBins) ...
-            '_city1' test_dst '_' parcel roi_mask '_nl.mat']);
+            '_city1' test_dst '_' parcel roi_mask '_nl-simple.mat']);
         save(outFileName,'cv_R2','results');
     end
 end
