@@ -8,11 +8,16 @@
 % to this file, starting with the location of this script.
 parcels = {'bMask', 'EVC', 'OPA', 'PPA', 'RSC', 'PHG', 'ERC', 'Hipp', 'Thal'...
     'VTC'};
-roi_mask='-100';
-train_dst = 'B';
-test_dst = 'A';
+roi_mask='';
+train_dst = 'A';
+test_dst = 'B';
 nFilterBins = 16;
 n_par_workers=4;
+% The TR of the experiment, in seconds
+tr=2;
+% Define modelOpts
+hrfSearchFlag = true;
+modelOpts = {'nFilterBins',nFilterBins,'hrfSearch',hrfSearchFlag,'typicalGain',1};
 if isempty(gcp('nocreate')) && n_par_workers>1; parpool(n_par_workers); end
 % parpool(4);
 for sub_n = 8:8
@@ -31,19 +36,13 @@ for sub_n = 8:8
         % Load the stimulus and data variables
         load(fileName,'stimulus','data')
 
-        % The TR of the experiment, in seconds
-        tr=2;
-
         % Define the set of vertices
         vxs = 1:size(data{1},1);
 
         % Let's just work with one vertex for the demo
         % ii = 1;
         % vxs = vxs(ii);
-
-        % Define modelOpts
-        modelOpts = {'nFilterBins',nFilterBins};
-
+        
         % Call the forwardModel
         results = forwardModel(data,stimulus,tr,'modelClass','heading','vxs',vxs,'modelOpts',modelOpts);
 
@@ -81,7 +80,7 @@ for sub_n = 8:8
         % save R2
         outFileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),'results',...
             [sub '_city1' train_dst '_head-' num2str(nFilterBins) ...
-            '_city1' test_dst '_' parcel roi_mask '_nl.mat']);
+            '_city1' test_dst '_' parcel roi_mask '_nl-improved.mat']);
         save(outFileName,'cv_R2','results');
     end
 end
