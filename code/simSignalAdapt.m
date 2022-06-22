@@ -3,27 +3,27 @@
 % This script demonstrates creating a simulated signal for a model, adding
 % some noise, and testing if we can recover the model parameters
 %
-
+addpath(genpath('/Users/zhenganglu/Documents/MATLAB/toolboxes'));
 % Load some example data and stimulus file to base the simulation upon
 sub='sub-08';
 % The TR of the experiment, in seconds
 tr=2;
 % Define modelOpts
-nFilterBins = 8; % how many filters in the model
+nFilterBins = 45; % how many filters in the model
 filterWidth=360/nFilterBins;
 modelOpts = {'nFilterBins',nFilterBins};
 one_hot=0;
 realHD=1;
 % Load the stimulus and data variables
 fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),['data/' sub] ...
-    ,[sub '_city1A_stimulus_data_bMask-city1AB-100.mat']);
+    ,[sub '_city1A_stimulus_data_bMask-100.mat']);
 load(fileName,'stimulus','data')
 % 
 %% Simulated a heading direction
 % This code replaces the actual stimulus with a fully randomized ordering
 % of heading values, sampled from a specified number of discrete headings.
 nTRs = size(stimulus{1},2); % TRs per acquisition
-simBins = 8; % how many unique direction are there
+simBins = 45; % how many unique direction are there
 binSeparation = (2*pi/simBins);
 binCenters = 0:binSeparation:(2*pi)-binSeparation;
 if realHD==0

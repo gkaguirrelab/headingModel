@@ -3,7 +3,7 @@
 % This script demonstrates creating a simulated signal for a model, adding
 % some noise, and testing if we can recover the model parameters
 %
-
+addpath(genpath('/Users/zhenganglu/Documents/MATLAB/toolboxes'));
 % Flags that control simulation properties
 useRealHeadingFlag = true;
 oneHotSimulationFlag = false;
@@ -14,8 +14,8 @@ tr = 2;             % The TR of the experiment, in seconds
 preferredDirection = pi/2; 
 simSigma = pi/48;      % The width of the distribution of the bin weights when
                     %    simulating a distribution of heading weights
-simBins = 16;       % how many bins to simulate in the signal generation
-nFilterBins = 16;   % how many filters in the decoding model
+simBins = 360;       % how many bins to simulate in the signal generation
+nFilterBins = 45;   % how many filters in the decoding model
 
 % Pick an example subject on which to base the demo
 sub='sub-08';
