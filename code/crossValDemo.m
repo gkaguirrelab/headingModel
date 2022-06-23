@@ -27,7 +27,7 @@ for sub_n = 8:8
         sub = ['sub-' num2str(sub_n)];
     end
     % sub='sub-08';
-    for p=3:3
+    for p=2:2
         parcel=parcels{p};
 %         parcel='PHG';
         fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),['data/' sub], ...
