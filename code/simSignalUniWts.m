@@ -1,10 +1,9 @@
-% simSignalDemo.m
+% simSignalUniWts.m
 % tbUseProject('headingModel')
 % addpath(genpath('/Users/zhenganglu/Documents/MATLAB/toolboxes'));
 % This script demonstrates creating a simulated signal for a model, adding
 % some noise, and testing if we can recover the model parameters
 %
-
 % Flags that control simulation properties
 useRealHeadingFlag = true;
 uniSimulationFlag = true;
@@ -12,12 +11,15 @@ hrfSearchFlag = true;
 
 % Fixed variables of the simulation
 tr = 2;             % The TR of the experiment, in seconds
-preferredDirection = pi/2; 
+preferredDirection = pi/2;
+
 simSigma = pi/48;      % The width of the distribution of the bin weights when
                     %    simulating a distribution of heading weights
 simBins = 45;       % how many bins to simulate in the signal generation
 nFilterBins = 45;   % how many filters in the decoding model
-
+% FWHM = 2*pi/simBins; % width of filter in term of degree/radian
+% kappa = 8*log(2)/FWHM^2; % convert to width
+nFixedParams = 2; % corresponding to the adaptation gain and epsilon
 % Pick an example subject on which to base the demo
 sub='sub-08';
 
@@ -27,13 +29,13 @@ fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),['data/' sub] ..
 load(fileName,'stimulus','data')
 
 %% Simulate a heading direction
-
 % This code replaces the actual stimulus with a fully randomized ordering
 % of heading values, sampled from a specified number of discrete headings,
 % under the control of a flag
 nTRs = size(stimulus{1},2); % TRs per acquisition
 simBinSeparation = (2*pi/simBins);
 simBinCenters = 0:simBinSeparation:(2*pi)-simBinSeparation;
+
 if ~useRealHeadingFlag
     for ii=1:length(stimulus)
         stimulus{ii} = datasample(simBinCenters,nTRs);
@@ -41,7 +43,7 @@ if ~useRealHeadingFlag
 end
 
 % Define modelOpts for the simulation model
-nFixedParams = 2; % corresponding to the adaptation gain and epsilon
+
 modelOpts = {'nFilterBins',simBins,'hrfSearch',false,'typicalGain',1};
 
 % Create a model object
@@ -72,34 +74,15 @@ end
 
 % Get the simulated signal for the x params
 simSignal = modelSim.forward(x0);
-simSignalNoise = simSignal+0.5*randn(size(simSignal));
 %% Add noise to the signal
-
-% Plot this
-figure
-subplot(4,1,1);
-thisVec = stimulus{1};
-plot(thisVec,'-k');
-hold on
-xlabel('time [TRs]');
-ylabel('heading [rads]');
-title('real heading direction');
-set(gca,'YTick',0:pi/2:2*pi) 
-set(gca,'YTickLabel',{'0','pi/2','pi','3*pi/2','2*pi'})
-
-subplot(4,1,2);
-plot(simSignal(1:nTRs));
-xlabel('time [TRs]');
-ylabel('BOLD response');
-title(sprintf('simulated BOLD response (bins = %d)',simBins));
+simSignalNoise = simSignal+0.5*randn(size(simSignal));
 
 %% Let's see if we can recover these parameters
-
 % First, create a data variable from the simSignal
 nAcq = size(data,2);
 nTRsPerAcq = length(simSignal)/nAcq;
 for ii=1:nAcq
-    data{ii} = simSignal(nTRsPerAcq*(ii-1)+1:nTRsPerAcq*ii)';
+    data{ii} = simSignalNoise(nTRsPerAcq*(ii-1)+1:nTRsPerAcq*ii)';
 end
 
 % Update the modelOpts with the number of bins used for decoding
@@ -114,6 +97,26 @@ x1 = results.params;
 % Obtain the model fit
 modelOut = heading(data,stimulus,tr,modelOpts{:});
 fitSignal = modelOut.forward(x1);
+
+%%
+% Plot this
+xWts=x1(1,nFixedParams+1:simBins+nFixedParams);
+figure
+subplot(4,1,1);
+thisVec = stimulus{1};
+plot(thisVec,'-k');
+hold on
+xlabel('time [TRs]');
+ylabel('heading [rads]');
+title('real heading direction');
+set(gca,'YTick',0:pi/2:2*pi) 
+set(gca,'YTickLabel',{'0','pi/2','pi','3*pi/2','2*pi'})
+
+subplot(4,1,2);
+plot(simSignalNoise(1:nTRs));
+xlabel('time [TRs]');
+ylabel('BOLD response');
+title(sprintf('simulated BOLD response (bins = %d)',simBins));
 
 % Add this to the plot
 subplot(4,1,3);
@@ -130,9 +133,11 @@ modelBinCenters = 0:modelBinSeparation:(2*pi)-modelBinSeparation;
 subplot(4,1,4);
 plot(simBinCenters,x0(nFixedParams+1:nFixedParams+simBins),'-k');
 hold on
-plot(modelBinCenters,x1(nFixedParams+1:nFixedParams+nFilterBins),'*r');
+plot(modelBinCenters,xWts,'*r');
+% plot(modelBinCenters,x1(nFixedParams+1:nFixedParams+nFilterBins),'*r');
 set(gca,'XTick',0:pi/2:2*pi) 
 set(gca,'XTickLabel',{'0','pi/2','pi','3*pi/2','2*pi'})
+ylim([1-0.3, 1+0.3]);
 ylabel('model parameter');
 xlabel('bin centers [rads]');
 title('simulated and recovered bin amplitude');
