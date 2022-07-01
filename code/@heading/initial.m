@@ -26,8 +26,7 @@ function x0 = initial(obj)
 typicalGain = obj.typicalGain;
 nParams = obj.nParams;
 nFilterBins = obj.nFilterBins;
-
-nFixedParams = 2;
+nFixedParams = obj.nFixedParams;
 
 % Assign the x0 variable
 x0 = zeros(1,nParams);
@@ -35,7 +34,8 @@ x0 = zeros(1,nParams);
 % Assemble X0
 x0(1) = typicalGain; % gain
 x0(2) = 1;           % exponent
-%x0(3) = 1;        % time-constant of the exponential decay in seconds
+x0(3) = (2*pi/nFilterBins)*2; % sigma of the filter bins
+
 x0(nFixedParams+1:nFixedParams+nFilterBins) = 0;       % zero initial gain for direction filter bank
 
 switch obj.hrfType

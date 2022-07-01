@@ -26,8 +26,7 @@ function setbounds(obj)
 % Obj variables
 nParams = obj.nParams;
 nFilterBins = obj.nFilterBins;
-
-nFixedParams = 2;
+nFixedParams = obj.nFixedParams;
 
 % Define outputs
 lb = nan(1,nParams);
@@ -41,6 +40,10 @@ ub(1) = Inf;              % gain
 % expansive non-linearities
 lb(2) = 0.1;             % exponent
 ub(2) = 3;              % exponent
+
+% The sigma bounds are adjusted by the number of filter bins
+lb(3) = (2*pi/nFilterBins)*2;
+ub(3) = (2*pi/nFilterBins)*2;
 
 % The time-constant parameter is bounded by zero at the low end, and by 2
 % seconds at the high end. Currently unused

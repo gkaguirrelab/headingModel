@@ -35,6 +35,7 @@ nFixedParams = obj.nFixedParams;
 adaptGain = x(1);   % Gain of the adaptation effect
 epsilon = x(2);     % Non-linear exponent of the neural signal
 %tau = x(3);         % Time constant of the temporal integration
+sigmaVal = x(3);     % Width of the bins that fit the data
 
 
 %% Build a model of absolute heading direction
@@ -42,7 +43,6 @@ epsilon = x(2);     % Non-linear exponent of the neural signal
 % circular gaussian of width sigma (converted into the von Misses
 % concentration parameter kappa).
 binSeparation = (2*pi/nFilterBins);
-sigmaVal = binSeparation;
 kappa = sqrt(1/sigmaVal^2);
 neuralSignal = zeros(size(stimulus));
 binCenters = 0:binSeparation:(2*pi)-binSeparation;

@@ -88,6 +88,9 @@ classdef heading < handle
         
         % The type of HRF model, including {'flobs','gamma'};
         hrfType
+
+        % The lasso regression penalty for the bin weights
+        lassoRegularization
         
     end
     
@@ -137,11 +140,15 @@ classdef heading < handle
             p.addParameter('nFilterBins',8,@isscalar);
             p.addParameter('hrfType','flobs',@ischar);            
             p.addParameter('hrfSearch',true,@islogical);            
+            p.addParameter('lassoRegularization',0,@isscalar);           
             p.addParameter('verbose',true,@islogical);
             
             % parse
             p.parse(data, stimulus, tr, varargin{:})
             
+            % Store the lassoRegularization value
+            obj.lassoRegularization = p.Results.lassoRegularization;
+
             % Create the dataTime and dataAcqGroups variables
             % Concatenate and store in the object.
             for ii=1:length(data)
@@ -160,9 +167,10 @@ classdef heading < handle
             % These are the parameters, corresponding to:
             % - gain
             % - exponent
+            % - sigma of the filter bins
             % - a variable number of parameters for an absolute heading direction model
             % - 3 parameters of the FLOBS HRF
-            obj.nFixedParams = 2;
+            obj.nFixedParams = 3;
             obj.nFilterBins = p.Results.nFilterBins;
             obj.nParams = obj.nFixedParams + p.Results.nFilterBins + 3;
             
