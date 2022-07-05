@@ -220,22 +220,17 @@ if makePlots
     title(sprintf('simulated neural response downsampled to TRs (bins = %d)',nSimBins));
     
     subplot(5,1,3);
-    plot(simSignalNoise(1:nTRs));
+    plot(simSignalNoise(1:nTRs),'.k');
+    plot(fitSignal(1:nTRs),'-r');
     xlabel('time [TRs]');
     ylabel('BOLD response');
-    title(sprintf('simulated BOLD response (bins = %d)',nSimBins));
-
-    subplot(5,1,4);
-    plot(fitSignal(1:nTRs));
-    xlabel('time [TRs]');
-    ylabel('BOLD response');
-    title(sprintf('fitted BOLD response (bins = %d)',nFitBins));
+    title(sprintf('simulated and fitted BOLD response (bins = %d)',nSimBins));
 
     % Create the bin centers used for model read-out
     modelBinSeparation = (2*pi/nFitBins);
     modelBinCenters = 0:modelBinSeparation:(2*pi)-modelBinSeparation;
 
-    subplot(5,1,5);
+    subplot(5,1,4);
     plot(simBinCenters,x0(nFixedParams+1:nFixedParams+nSimBins),'-k');
     hold on
     plot(modelBinCenters,xWts,'*r');
