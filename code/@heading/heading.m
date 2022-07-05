@@ -140,7 +140,7 @@ classdef heading < handle
             p.addParameter('nFilterBins',8,@isscalar);
             p.addParameter('hrfType','flobs',@ischar);            
             p.addParameter('hrfSearch',true,@islogical);            
-            p.addParameter('lassoRegularization',0,@isscalar);           
+            p.addParameter('lassoRegularization',0.05,@isscalar);           
             p.addParameter('verbose',true,@islogical);
             
             % parse
