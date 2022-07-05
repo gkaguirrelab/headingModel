@@ -63,7 +63,7 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
 %{
     % Set some fixed parameters, and see if we can recover them
     fixedParams = [0.25 0.8];
-    [x0, x1] = simEngine(0.1,1,fixedParams,0.05);
+    [x0, x1] = simEngine(2,1,fixedParams,0.05);
     fprintf('simulated and recovered adaptation gain: [%2.2f, %2.2f] \n',x0(1),x1(1));
     fprintf('simulated and recovered adaptation exponent: [%2.2f, %2.2f] \n',x0(2),x1(2));
 %}
