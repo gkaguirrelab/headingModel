@@ -84,14 +84,20 @@ dataTimeSingleAcq = dataTime(stimAcqGroups==1);
 % Scale the stimulus matrix by the gain parameter
 neuralSignal = neuralSignal + headingChange*adaptGain;
 
-% Create the HRF
-switch obj.hrfType
-    case 'flobs'
-        hrf = makeFlobsHRF(x(nParams-2:nParams), obj.flobsbasis);
-    case 'gamma'
-        hrf = makeGammaHRF(x(nParams-2:nParams), obj.stimDeltaT);
-    otherwise
-        error('Not a recognized HRF type')
+% Create the HRF. First, check to see if we have all zeros for the hrf
+% params, in which case the hrf is a delta function.
+if all(x(nParams-2:nParams)==0)
+    hrf = zeros(size(obj.flobsbasis,1),1);
+    hrf(1)=1;
+else
+    switch obj.hrfType
+        case 'flobs'
+            hrf = makeFlobsHRF(x(nParams-2:nParams), obj.flobsbasis);
+        case 'gamma'
+            hrf = makeGammaHRF(x(nParams-2:nParams), obj.stimDeltaT);
+        otherwise
+            error('Not a recognized HRF type')
+    end
 end
 
 % Store the hrf in the object
@@ -155,3 +161,4 @@ hrf = flobsbasis*x';
 hrf = hrf/sum(abs(hrf));
 
 end
+
