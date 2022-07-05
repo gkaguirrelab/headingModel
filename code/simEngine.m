@@ -1,4 +1,4 @@
-function [x0, x1] = simEngine(noiseScale,binWeightMax,adaptationGain,lassoRegularization,nSimBins,nFitBins,useRealHeading,hrfSearch,makePlots)
+function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegularization,nSimBins,nFitBins,useRealHeading,hrfSearch,makePlots)
 % Function to conduct simulations using the heading forwardModel
 %
 % Syntax:
@@ -17,7 +17,11 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,adaptationGain,lassoRegula
 %  'binWeightMax'         - The max bin weight for the simulated response
 %                           to heading direction. Set to zero to have
 %                           no response to heading direction.
-%  'adaptationGain'       - The gain of any sequential adaptation effect
+%  'fixedParamVector'     - A vector of the values to use for the fixed
+%                           parameters in the simulation, with the entries
+%                           corresponding to:
+%                             - adaptation gain
+%                             - adaptation exponent
 %  'lassoRegularization'  - The regularization on the lasso penalty that is
 %                           derived from the filter bin weights
 %  'nSimBins'             - The number of filter bins to use in creating
@@ -39,33 +43,37 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,adaptationGain,lassoRegula
     % No heading response, no adaptation, with some small amount
     % of noise and no lasso penalty. This causes the bin weights to show
     % an oscillation
-    simEngine(1,0,0,0);
+    fixedParams = [0 1];
+    simEngine(1,0,fixedParams,0);
 %}
 %{
     % No heading response, no adaptation, with large noise, but include the
     % lasso penalty. This removes the oscillation in the bin weights. Note
     % that y-axis scale for the plot of bin weights is quite small.
-    simEngine(4,0,0,0.05);
+    fixedParams = [0 1];
+    simEngine(4,0,fixedParams,0.05);
 %}
 %{
     % Now demonstrate that with a veridical heading effect, the fit
     % recovers the bin weights well, even in the presence of substantial
     % noise
-    simEngine(4,1,0,0.05);
+    fixedParams = [0 1];
+    simEngine(4,1,fixedParams,0.05);
 %}
 %{
-    % Add an adaptation effect, and report how well we did in recovering
-    % the adaptation parameter
-    [x0, x1] = simEngine(4,1,0.5,0.05);
+    % Set some fixed parameters, and see if we can recover them
+    fixedParams = [0.25 0.8];
+    [x0, x1] = simEngine(0.1,1,fixedParams,0.05);
     fprintf('simulated and recovered adaptation gain: [%2.2f, %2.2f] \n',x0(1),x1(1));
+    fprintf('simulated and recovered adaptation exponent: [%2.2f, %2.2f] \n',x0(2),x1(2));
 %}
 
 
 arguments
     noiseScale {isscalar,mustBeNumeric} = 1
     binWeightMax {isscalar,mustBeNumeric} = 1
-    adaptationGain {isscalar,mustBeNumeric} = 0
-    lassoRegularization {isscalar,mustBeNumeric} = 0.1
+    fixedParamVector {isvector,mustBeNumeric} = [0, 1]
+    lassoRegularization {isscalar,mustBeNumeric} = 0.05
     nSimBins {isscalar,mustBeNumeric} = 45;       % how many bins to simulate in the signal generation
     nFitBins {isscalar,mustBeNumeric} = 45;   % how many filters in the decoding model
     useRealHeading {islogical} = true
@@ -86,7 +94,6 @@ tr = 2;
 preferredDirection = pi/2;
 nTRsToPad = 8;
 nFixedParams = 3; % corresponding to the adaptation gain, epsilon, and the sigma of the filter bins
-
 
 %% Create a stimulus
 % We load a set of heading direction vectors from an example subject, and
@@ -137,8 +144,11 @@ modelSim = heading(dummyData,stimulus,tr,'stimTime',stimTime,modelOpts{:});
 % Get the x0 param values
 x0 = modelSim.initial;
 
-% Set the gain of the adaptation effect to the specified value
-x0(1) = adaptationGain;
+% What's the total number of params?
+nParams = length(x0);
+
+% Set the fixed params to the passed values
+x0(1:length(fixedParamVector)) = fixedParamVector;
 
 % Create a von Misses distribution of bin weights in the circular heading
 % space. The function circ_vmpdf takes the bin centers, a preferred
@@ -151,10 +161,16 @@ simSigma = simBinSeparation*2;
 kappa = sqrt(1/simSigma^2);
 x0(nFixedParams+1:nSimBins+nFixedParams) = binWeightMax.*circ_vmpdf(simBinCenters,preferredDirection,kappa);
 
-% Get the simulated signal for the x params
+% Get the simulated neural signal for the x params. To do so, we pass zeros
+% for the hrf params
+xDelta = x0;
+xDelta(nParams-2:nParams) = 0;
+simSignalNeural = modelSim.forward(xDelta);
+
+% Get the simulated BOLD signal for the x params
 simSignal = modelSim.forward(x0);
 
-% Add noise to the signal
+% Add noise to the BOLD signal
 simSignalNoise = simSignal+noiseScale*randn(size(simSignal));
 
 
@@ -187,7 +203,7 @@ fitSignal = modelOut.forward(x1);
 if makePlots
     xWts=x1(1,nFixedParams+1:nSimBins+nFixedParams);
     figure
-    subplot(4,1,1);
+    subplot(5,1,1);
     thisVec = stimulus{1};
     plot(thisVec,'-k');
     hold on
@@ -197,29 +213,32 @@ if makePlots
     set(gca,'YTick',0:pi/2:2*pi)
     set(gca,'YTickLabel',{'0','pi/2','pi','3*pi/2','2*pi'})
 
-    subplot(4,1,2);
+    subplot(5,1,2);
+    plot(simSignalNeural(1:nTRs));
+    xlabel('time [TRs]');
+    ylabel('Neural response');
+    title(sprintf('simulated neural response downsampled to TRs (bins = %d)',nSimBins));
+    
+    subplot(5,1,3);
     plot(simSignalNoise(1:nTRs));
     xlabel('time [TRs]');
     ylabel('BOLD response');
     title(sprintf('simulated BOLD response (bins = %d)',nSimBins));
 
-    % Add this to the plot
-    subplot(4,1,3);
+    subplot(5,1,4);
     plot(fitSignal(1:nTRs));
     xlabel('time [TRs]');
     ylabel('BOLD response');
     title(sprintf('fitted BOLD response (bins = %d)',nFitBins));
 
-    % Compare the simulated and recovered values. First create the bin centers
-    % used for model read-out
+    % Create the bin centers used for model read-out
     modelBinSeparation = (2*pi/nFitBins);
     modelBinCenters = 0:modelBinSeparation:(2*pi)-modelBinSeparation;
 
-    subplot(4,1,4);
+    subplot(5,1,5);
     plot(simBinCenters,x0(nFixedParams+1:nFixedParams+nSimBins),'-k');
     hold on
     plot(modelBinCenters,xWts,'*r');
-    % plot(modelBinCenters,x1(nFixedParams+1:nFixedParams+nFilterBins),'*r');
     set(gca,'XTick',0:pi/2:2*pi)
     set(gca,'XTickLabel',{'0','pi/2','pi','3*pi/2','2*pi'})
     ylabel('model parameter');
