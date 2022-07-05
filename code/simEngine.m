@@ -203,7 +203,7 @@ fitSignal = modelOut.forward(x1);
 if makePlots
     xWts=x1(1,nFixedParams+1:nSimBins+nFixedParams);
     figure
-    subplot(5,1,1);
+    subplot(4,1,1);
     thisVec = stimulus{1};
     plot(thisVec,'-k');
     hold on
@@ -213,14 +213,15 @@ if makePlots
     set(gca,'YTick',0:pi/2:2*pi)
     set(gca,'YTickLabel',{'0','pi/2','pi','3*pi/2','2*pi'})
 
-    subplot(5,1,2);
+    subplot(4,1,2);
     plot(simSignalNeural(1:nTRs));
     xlabel('time [TRs]');
     ylabel('Neural response');
     title(sprintf('simulated neural response downsampled to TRs (bins = %d)',nSimBins));
     
-    subplot(5,1,3);
+    subplot(4,1,3);
     plot(simSignalNoise(1:nTRs),'.k');
+    hold on
     plot(fitSignal(1:nTRs),'-r');
     xlabel('time [TRs]');
     ylabel('BOLD response');
@@ -230,7 +231,7 @@ if makePlots
     modelBinSeparation = (2*pi/nFitBins);
     modelBinCenters = 0:modelBinSeparation:(2*pi)-modelBinSeparation;
 
-    subplot(5,1,4);
+    subplot(4,1,4);
     plot(simBinCenters,x0(nFixedParams+1:nFixedParams+nSimBins),'-k');
     hold on
     plot(modelBinCenters,xWts,'*r');
