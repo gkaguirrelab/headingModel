@@ -61,11 +61,25 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
     simEngine(4,1,fixedParams,0.05);
 %}
 %{
-    % Set some fixed parameters, and see if we can recover them
+    % Set some fixed parameters, and see if we can recover them, including
+    % an interpolated preferred heading direction.
     fixedParams = [0.25 0.8];
-    [x0, x1] = simEngine(2,1,fixedParams,0.05);
+    nBins = 45;
+    [x0, x1] = simEngine(2,1,fixedParams,0.05,nBins,nBins);
     fprintf('simulated and recovered adaptation gain: [%2.2f, %2.2f] \n',x0(1),x1(1));
     fprintf('simulated and recovered adaptation exponent: [%2.2f, %2.2f] \n',x0(2),x1(2));
+    % Obtain the interpolated peak of the preferred heading direction
+    binSupportFit = 1:0.01:nBins;
+    directionSupportFit = linspace(0,2*pi-(2*pi/nBins),length(binSupportFit));
+    x0Fit = spline(1:nBins,x0(4:end-3),binSupportFit);
+    x1Fit = spline(1:nBins,x1(4:end-3),binSupportFit);
+    % Report the peak preferred bin
+    [~,idx0]=max(x0Fit);
+    fprintf('The interpolated, veridical heading direction is %2.2f \n',directionSupportFit(idx0));
+    [~,idx1]=max(x1Fit);
+    fprintf('The interpolated, recovered heading direction is %2.2f \n',directionSupportFit(idx1));
+    signedError = directionSupportFit(idx0)-directionSupportFit(idx1);
+    fprintf('The signed error in recovered heading direction is %2.2f \n',signedError);    
 %}
 
 
@@ -215,13 +229,14 @@ if makePlots
     title('real heading direction');
     set(gca,'YTick',0:pi/2:2*pi)
     set(gca,'YTickLabel',{'0','pi/2','pi','3*pi/2','2*pi'})
-    xlim(range(dataTime));
+    xlim([min(dataTime) max(dataTime)]);
 
     subplot(4,1,2);
     plot(dataTime,simSignalNeural(1:nTRs));
     xlabel('time [seconds]');
     ylabel('Neural response');
     title(sprintf('simulated neural response downsampled to TRs (bins = %d)',nSimBins));
+    xlim([min(dataTime) max(dataTime)]);
     
     subplot(4,1,3);
     plot(dataTime,simSignalNoise(1:nTRs),'.k');
@@ -230,6 +245,7 @@ if makePlots
     xlabel('time [seconds]');
     ylabel('BOLD response');
     title(sprintf('simulated and fitted BOLD response (bins = %d)',nSimBins));
+    xlim([min(dataTime) max(dataTime)]);
 
     % Create the bin centers used for model read-out
     modelBinSeparation = (2*pi/nFitBins);
