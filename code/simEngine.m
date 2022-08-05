@@ -131,6 +131,9 @@ end
 
 %% Create data
 
+% Define the dataTime
+dataTime = tr*(0:nTRs-1);
+
 % Define modelOpts for the simulation model
 modelOpts = {'nFilterBins',nSimBins,'typicalGain',1};
 
@@ -205,25 +208,26 @@ if makePlots
     figure
     subplot(4,1,1);
     thisVec = stimulus{1};
-    plot(thisVec,'-k');
+    plot(stimTime{1},thisVec,'-k');
     hold on
-    xlabel('time [TRs]');
+    xlabel('time [seconds]');
     ylabel('heading [rads]');
     title('real heading direction');
     set(gca,'YTick',0:pi/2:2*pi)
     set(gca,'YTickLabel',{'0','pi/2','pi','3*pi/2','2*pi'})
+    xlim(range(dataTime));
 
     subplot(4,1,2);
-    plot(simSignalNeural(1:nTRs));
-    xlabel('time [TRs]');
+    plot(dataTime,simSignalNeural(1:nTRs));
+    xlabel('time [seconds]');
     ylabel('Neural response');
     title(sprintf('simulated neural response downsampled to TRs (bins = %d)',nSimBins));
     
     subplot(4,1,3);
-    plot(simSignalNoise(1:nTRs),'.k');
+    plot(dataTime,simSignalNoise(1:nTRs),'.k');
     hold on
-    plot(fitSignal(1:nTRs),'-r');
-    xlabel('time [TRs]');
+    plot(dataTime,fitSignal(1:nTRs),'-r');
+    xlabel('time [seconds]');
     ylabel('BOLD response');
     title(sprintf('simulated and fitted BOLD response (bins = %d)',nSimBins));
 
