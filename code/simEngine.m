@@ -1,4 +1,4 @@
-function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegularization,nSimBins,nFitBins,useRealHeading,hrfSearch,makePlots)
+function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegularization,nSimBins,nFitBins,useRealHeading,hrfSearch,adaptSearch,makePlots)
 % Function to conduct simulations using the heading forwardModel
 %
 % Syntax:
@@ -33,6 +33,8 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
 %                           version of the actual heading is used.
 %  'hrfSearch'            - Flag to control if the fitting is performed
 %                           with a search over the parameters of the hrf
+%  'adaptSearch'          - Flag to control if the model implements an
+%                           adaptation effect.
 %  'makePlots'            - Flag to control if plots are produced
 %
 % Outputs:
@@ -65,7 +67,9 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
     % an interpolated preferred heading direction.
     fixedParams = [0.25 0.8];
     nBins = 45;
-    [x0, x1] = simEngine(2,1,fixedParams,0.05,nBins,nBins);
+    useRealHeading = true; hrfSearch = true; adaptSearch = false;
+    [x0, x1] = simEngine(2,1,fixedParams,0.05,nBins,nBins,...
+        useRealHeading,hrfSearch,adaptSearch);
     fprintf('simulated and recovered adaptation gain: [%2.2f, %2.2f] \n',x0(1),x1(1));
     fprintf('simulated and recovered adaptation exponent: [%2.2f, %2.2f] \n',x0(2),x1(2));
     % Obtain the interpolated peak of the preferred heading direction
@@ -92,6 +96,7 @@ arguments
     nFitBins {isscalar,mustBeNumeric} = 45;   % how many filters in the decoding model
     useRealHeading {islogical} = true
     hrfSearch {islogical} = true
+    adaptSearch {islogical} = true
     makePlots {islogical} = true
 end
 
@@ -201,7 +206,7 @@ for ii=1:nAcq
 end
 
 % Update the modelOpts with the number of bins used for decoding
-modelOpts = {'nFilterBins',nFitBins,'hrfSearch',hrfSearch,'typicalGain',1,'lassoRegularization',lassoRegularization};
+modelOpts = {'nFilterBins',nFitBins,'hrfSearch',hrfSearch,'adaptSearch',adaptSearch,'typicalGain',1,'lassoRegularization',lassoRegularization};
 
 % Call the forwardModel
 results = forwardModel(data,stimulus,tr,'stimTime',stimTime,...

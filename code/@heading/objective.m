@@ -20,14 +20,16 @@ function fVal = objective(obj, signal, x)
 %   fVal                  - Scalar.
 %
 
+
 % Implement an L2 norm
 fVal = std(signal - obj.forward(x));
 
 % Add a lasso regression penalty based upon the bin weights
 lassoRegularization = obj.lassoRegularization;
 nFilterBins = obj.nFilterBins;
-nFixedParams = obj.nFixedParams;
-penalty = lassoRegularization * sum(abs(x(nFixedParams+1:nFixedParams+nFilterBins)))/nFilterBins;
+nFixedParamsAdapt = obj.nFixedParamsAdapt;
+nFixedParamsOther = obj.nFixedParamsOther;
+penalty = lassoRegularization * sum(abs(x(nFixedParamsAdapt+nFixedParamsOther+1:nFixedParamsAdapt+nFixedParamsOther+nFilterBins)))/nFilterBins;
 fVal = fVal + penalty;
 
 end
