@@ -33,9 +33,12 @@ classdef heading < handle
         % The number of bins in the heading direction filter bank
         nFilterBins
 
-        % The number of parameters dedicated to components of the model
-        % other than the filter bank and the shape of the HRF
-        nFixedParams
+        % The number of parameters dedicated to the adaptation model
+        nFixedParamsAdapt
+
+        % The number of other fixed parameters of the model, besides
+        % adaptation, the hrf, and the set of filter bank weights
+        nFixedParamsOther
 
         % The number of parameters in the model
         nParams
@@ -138,6 +141,7 @@ classdef heading < handle
             p.addParameter('polyDeg',[],@isnumeric);
             p.addParameter('typicalGain',300,@isscalar);
             p.addParameter('nFilterBins',8,@isscalar);
+            p.addParameter('adaptSearch',true,@islogical);            
             p.addParameter('hrfType','flobs',@ischar);            
             p.addParameter('hrfSearch',true,@islogical);            
             p.addParameter('lassoRegularization',0.05,@isscalar);           
@@ -170,9 +174,11 @@ classdef heading < handle
             % - sigma of the filter bins
             % - a variable number of parameters for an absolute heading direction model
             % - 3 parameters of the FLOBS HRF
-            obj.nFixedParams = 3;
+            obj.nFixedParamsAdapt = 2;
+            obj.nFixedParamsOther = 1;
             obj.nFilterBins = p.Results.nFilterBins;
-            obj.nParams = obj.nFixedParams + p.Results.nFilterBins + 3;
+            nHRFParams = 3;
+            obj.nParams = obj.nFixedParamsAdapt +  obj.nFixedParamsOther + p.Results.nFilterBins + nHRFParams;
             
             % Define the stimLabels
             if ~isempty(p.Results.stimLabels)
@@ -188,15 +194,26 @@ classdef heading < handle
             end
             obj.stimLabels = stimLabels;
             
-            % Define the fix and float param sets
+            % Define the fix and float param sets. We will always search
+            % over the nFixedParamsOther and the nFilterBins
+            floatSet = [obj.nFixedParamsAdapt+1:obj.nFixedParamsAdapt+obj.nFixedParamsOther+obj.nFilterBins];
+            fixSet = [];
+
             if p.Results.hrfSearch
-                obj.floatSet = {1:obj.nParams};
-                obj.fixSet = {[]};
+                floatSet = [floatSet obj.nParams-nHRFParams+1:obj.nParams];
             else
-                obj.floatSet = {1:obj.nParams-3};
-                obj.fixSet = {obj.nParams-2:obj.nParams};
+                fixSet = [fixSet obj.nParams-nHRFParams+1:obj.nParams];
             end
-            
+
+            if p.Results.adaptSearch
+                floatSet = [floatSet 1:obj.nFixedParamsAdapt];
+            else
+                fixSet = [fixSet 1:obj.nFixedParamsAdapt];
+            end
+
+            obj.floatSet = {floatSet};
+            obj.fixSet = {fixSet};
+
             % Create the stimAcqGroups variable. Concatenate the cells and
             % store in the object.
             for ii=1:length(stimulus)

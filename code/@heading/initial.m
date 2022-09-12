@@ -23,20 +23,20 @@ function x0 = initial(obj)
 
 
 % Obj variables
-typicalGain = obj.typicalGain;
 nParams = obj.nParams;
 nFilterBins = obj.nFilterBins;
-nFixedParams = obj.nFixedParams;
+nFixedParamsAdapt = obj.nFixedParamsAdapt;
+nFixedParamsOther = obj.nFixedParamsOther;
 
 % Assign the x0 variable
 x0 = zeros(1,nParams);
 
 % Assemble X0
-x0(1) = typicalGain; % gain
-x0(2) = 1;           % exponent
+x0(1) = 0; % gain
+x0(2) = 1; % exponent
 x0(3) = (2*pi/nFilterBins)*2; % sigma of the filter bins
 
-x0(nFixedParams+1:nFixedParams+nFilterBins) = 0;       % zero initial gain for direction filter bank
+x0(nFixedParamsAdapt+nFixedParamsOther+1:nFixedParamsAdapt+nFixedParamsOther+nFilterBins) = 0;       % zero initial gain for direction filter bank
 
 switch obj.hrfType
     case 'flobs'

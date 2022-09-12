@@ -27,7 +27,8 @@ stimTime = obj.stimTime;
 nParams = obj.nParams;
 nFilterBins = obj.nFilterBins;
 dataTime = obj.dataTime;
-nFixedParams = obj.nFixedParams;
+nFixedParamsAdapt = obj.nFixedParamsAdapt;
+nFixedParamsOther = obj.nFixedParamsOther;
 
 % Break the parameters of x into named variables for code transparency
 
@@ -47,7 +48,7 @@ kappa = sqrt(1/sigmaVal^2);
 neuralSignal = zeros(size(stimulus));
 binCenters = 0:binSeparation:(2*pi)-binSeparation;
 for ii = 1:nFilterBins
-    thisFilterResponse = x(nFixedParams+ii) .* circ_vmpdf(stimulus,binCenters(ii),kappa);
+    thisFilterResponse = x(nFixedParamsAdapt+nFixedParamsOther+ii) .* circ_vmpdf(stimulus,binCenters(ii),kappa);
     neuralSignal = neuralSignal + thisFilterResponse;
 end
 
