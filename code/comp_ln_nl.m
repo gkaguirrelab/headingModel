@@ -1,21 +1,24 @@
 function comp_ln_nl(voxel_index)
-%% which 
-    tbUseProject('headingModel')
+
+arguments
+    voxel_index {isscalar,mustBeNumeric} = 0
+end
+%     tbUseProject('headingModel')
     clear;
     clc;
     %% Load the weights from different models
     % load nonlinear model with false adapt flag set
-    load('./results/sub-08_city1A_head-45_city1B_bMask_nl-lasso-02_8TR-pad_adapt-0.mat', 'model_params');
+    load('./results/sub-08_city1A_head-45_city1B_bMask_nl-lasso-02_8TR-pad_adapt-0.mat', 'model_params', 'cv_R2');
     nl_adpt_0_wts = model_params;
-%     nl_adpt_0_r2 = cv_R2;
+    nl_adpt_0_r2 = cv_R2;
     % load nonlinear model with true adapt flag
-    load('./results/sub-08_city1A_head-45_city1B_bMask_nl-lasso-02_8TR-pad.mat', 'model_params')
+    load('./results/sub-08_city1A_head-45_city1B_bMask_nl-lasso-02_8TR-pad.mat', 'model_params', 'cv_R2')
     nl_wts=model_params;
-%     nl_r2 = cv_R2;
+    nl_r2 = cv_R2;
     % load linear model
-    load('./results/sub-08_city1A_head-45_city1B_bMask_ln.mat', 'train_weights', 'test_DM')
+    load('./results/sub-08_city1A_head-45_city1B_bMask_ln.mat', 'train_weights', 'test_DM', 'test_R2')
     ln_wts=train_weights;
-%     ln_r2=test_R2;
+    ln_r2=test_R2;
     %% VALIDATION
     % Note that the steps below will over-write the "stimulus" and "data"
     % variables. We may wish to make this more robust later.
@@ -82,7 +85,7 @@ function comp_ln_nl(voxel_index)
     test_data=data;
     test_tCourse = cat(2,test_data{:})';
     yhat_ln=sum(repmat(ln_wts_this_vox,numel(test_tCourse(:,ii)),1).*[ones(1,numel(test_tCourse(:,ii))); test_DM]',2);
-    valR2_ln=(corr(test_tCourse(:,ii),test_yhat, 'type', 'Pearson'))^2;
+    valR2_ln=(corr(test_tCourse(:,ii),yhat_ln, 'type', 'Pearson'))^2;
 
     %% Make plots
     x=1:length(yhat_ln)/9;
