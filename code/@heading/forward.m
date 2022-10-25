@@ -36,20 +36,32 @@ nFixedParamsOther = obj.nFixedParamsOther;
 adaptGain = x(1);   % Gain of the adaptation effect
 epsilon = x(2);     % Non-linear exponent of the neural signal
 %tau = x(3);         % Time constant of the temporal integration
-sigmaVal = x(3);     % Width of the bins that fit the data
-
+% Currently not using x(4)
 
 %% Build a model of absolute heading direction
 % To start we will model a single preferred heading directon with a
-% circular gaussian of width sigma (converted into the von Misses
-% concentration parameter kappa).
+% the von Misses distribution. This function takes a center in radians and
+% a concentration parameter kappa.
+
+% Set the bin centers as evenly spaced in radians 
 binSeparation = (2*pi/nFilterBins);
-% Find kappa: 1. use Nau method 2. use math
-% kappa = sqrt(1/sigmaVal^2); by gka
-% kappa = 1/(((8/180)*pi)/2.355)^2 by zgl
-kappa = 226; % findKappa(8);
-neuralSignal = zeros(size(stimulus));
 binCenters = 0:binSeparation:(2*pi)-binSeparation;
+
+% We fix the value of kappa to match the width that was used in prior
+% linear model fitting work. This prior work had used 45 bins and thus had
+% (360/45) = 8° bin separation. The bin FWHM was set equal to this. Given
+% the Gaussian relationship of:
+%   FWHM = 2*sqrt(2*log(2)å)*sigma ~= 2.355*sigma
+% And that :
+%   1/kappa = sigma^2;
+% This gives us:
+FWHM = binSeparation;
+sigma = FWHM/(2*sqrt(2*log(2)));
+kappa = 1/sigma^2;
+
+% Loop over the number of filter bins and create the von Misses
+% distributions
+neuralSignal = zeros(size(stimulus));
 for ii = 1:nFilterBins
     thisFilterResponse = x(nFixedParamsAdapt+nFixedParamsOther+ii) .* circ_vmpdf(stimulus,binCenters(ii),kappa);
     neuralSignal = neuralSignal + thisFilterResponse;
