@@ -18,7 +18,7 @@ function [fit, hrf] = forward(obj, x)
 %   fit                   - 1xtime vector.
 %   hrf                   - 1xn vector.
 %
-
+% zgl edit the kappa using findKappa function from vHD_encoding_model
 
 % Obj variables
 stimulus = obj.stimulus;
@@ -44,7 +44,10 @@ sigmaVal = x(3);     % Width of the bins that fit the data
 % circular gaussian of width sigma (converted into the von Misses
 % concentration parameter kappa).
 binSeparation = (2*pi/nFilterBins);
-kappa = sqrt(1/sigmaVal^2);
+% Find kappa: 1. use Nau method 2. use math
+% kappa = sqrt(1/sigmaVal^2); by gka
+% kappa = 1/(((8/180)*pi)/2.355)^2 by zgl
+kappa = 226; % findKappa(8);
 neuralSignal = zeros(size(stimulus));
 binCenters = 0:binSeparation:(2*pi)-binSeparation;
 for ii = 1:nFilterBins

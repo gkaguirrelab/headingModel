@@ -34,7 +34,7 @@ x0 = zeros(1,nParams);
 % Assemble X0
 x0(1) = 0; % gain
 x0(2) = 1; % exponent
-x0(3) = (2*pi/nFilterBins)*2; % sigma of the filter bins
+x0(3) = 2*pi/nFilterBins; % sigma of the filter bins set to the distance between filter centers
 
 x0(nFixedParamsAdapt+nFixedParamsOther+1:nFixedParamsAdapt+nFixedParamsOther+nFilterBins) = 0;       % zero initial gain for direction filter bank
 
