@@ -111,17 +111,18 @@ end
 %     modeling effort.
 tr = 2;
 preferredDirection = pi/2;
-nTRsToPad = 8;
 nFixedParams = 3; % corresponding to the adaptation gain, epsilon, and the sigma of the filter bins
-
+% high res parameters
+tempRes = 660/3384;
+nDTsToPad = 8*round(3384/330); %round(3384/330)
 %% Create a stimulus
 % We load a set of heading direction vectors from an example subject, and
 % either use these values, or base a simulation upon them.
-sub='sub-08';
-fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),['data/' sub] ...
-    ,[sub '_city1A_stimulus_data_bMask-100.mat']);
+fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),['data/'] ...
+    ,'sub-08_city1A_stimulus.mat');
 load(fileName,'stimulus')
-nTRs = size(stimulus{1},2); % TRs per acquisition
+nDTs = size(stimulus{1},2);
+nTRs = 330; % TRs per acquisition
 
 % Either use the actual heading direction, or randomize the order of the
 % heading values in each acquisition
@@ -133,25 +134,26 @@ end
 
 % Extend the stimulus back in time to provide some "warm up" for the HRF;
 % create a stimTime array
+stimTime={};
 for ii=1:length(stimulus)
 
     % Grab an acquisition from the cell array
     thisStim = stimulus{ii};
 
     % Create a stimTime vector
-    stimTime{ii} = -nTRsToPad*tr:tr:tr*(length(thisStim)-1);
+    stimTime{ii} = -nDTsToPad*tempRes:tempRes:tempRes*(length(thisStim)-1);
 
     % Pad this stim
-    thisStim = [repmat(thisStim(1),1,nTRsToPad), thisStim];
+    thisStim = [repmat(thisStim(1),1,nDTsToPad), thisStim];
     stimulus{ii} = thisStim;
 
 end
-
 
 %% Create data
 
 % Define the dataTime
 dataTime = tr*(0:nTRs-1);
+headingTime= -nDTsToPad*tempRes:tempRes:tempRes*(nDTs-1);
 
 % Define modelOpts for the simulation model
 modelOpts = {'nFilterBins',nSimBins,'typicalGain',1};
@@ -179,8 +181,9 @@ x0(1:length(fixedParamVector)) = fixedParamVector;
 % distribution
 simBinSeparation = (2*pi/nSimBins);
 simBinCenters = 0:simBinSeparation:(2*pi)-simBinSeparation;
-simSigma = simBinSeparation*2;
-kappa = sqrt(1/simSigma^2);
+FWHM = simBinSeparation;
+sigma = FWHM/(2*sqrt(2*log(2)));
+kappa = 1/sigma^2;
 x0(nFixedParams+1:nSimBins+nFixedParams) = binWeightMax.*circ_vmpdf(simBinCenters,preferredDirection,kappa);
 
 % Get the simulated neural signal for the x params. To do so, we pass zeros
@@ -227,14 +230,14 @@ if makePlots
     figure
     subplot(4,1,1);
     thisVec = stimulus{1};
-    plot(stimTime{1},thisVec,'-k');
+    plot(headingTime,thisVec,'-k');
     hold on
     xlabel('time [seconds]');
     ylabel('heading [rads]');
     title('real heading direction');
     set(gca,'YTick',0:pi/2:2*pi)
     set(gca,'YTickLabel',{'0','pi/2','pi','3*pi/2','2*pi'})
-    xlim([min(dataTime) max(dataTime)]);
+    xlim([min(headingTime) max(headingTime)]);
 
     subplot(4,1,2);
     plot(dataTime,simSignalNeural(1:nTRs));
