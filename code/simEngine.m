@@ -110,16 +110,23 @@ end
 %     accomplished by discarding the first n TRs of the data in the
 %     modeling effort.
 tr = 2;
-preferredDirection = pi/2;
+preferredDirection = pi;
 nFixedParams = 3; % corresponding to the adaptation gain, epsilon, and the sigma of the filter bins
-% high res parameters
-tempRes = 660/3384;
-nDTsToPad = 8*round(3384/330); %round(3384/330)
+
+% The temporal sampling interval (in seconds) of the heading direction
+% vector
+deltaTStim = 660/3384;
+
+% The number of seconds to pad the start of the stimulus sequence, to
+% provide some "warm up" for the model
+padTimeSecs = 8;
+nDTsToPad = round(padTimeSecs*deltaTStim);
+
 %% Create a stimulus
 % We load a set of heading direction vectors from an example subject, and
 % either use these values, or base a simulation upon them.
-fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),['data/'] ...
-    ,'sub-08_city1A_stimulus.mat');
+fileName = fullfile(fileparts(fileparts(mfilename('fullpath'))),'data/', ...
+    'sub-08_city1A_stimulus.mat');
 load(fileName,'stimulus')
 nDTs = size(stimulus{1},2);
 nTRs = 330; % TRs per acquisition
@@ -141,7 +148,7 @@ for ii=1:length(stimulus)
     thisStim = stimulus{ii};
 
     % Create a stimTime vector
-    stimTime{ii} = -nDTsToPad*tempRes:tempRes:tempRes*(length(thisStim)-1);
+    stimTime{ii} = -nDTsToPad*deltaTStim:deltaTStim:deltaTStim*(length(thisStim)-1);
 
     % Pad this stim
     thisStim = [repmat(thisStim(1),1,nDTsToPad), thisStim];
@@ -153,7 +160,7 @@ end
 
 % Define the dataTime
 dataTime = tr*(0:nTRs-1);
-headingTime= -nDTsToPad*tempRes:tempRes:tempRes*(nDTs-1);
+headingTime= -nDTsToPad*deltaTStim:deltaTStim:deltaTStim*(nDTs-1);
 
 % Define modelOpts for the simulation model
 modelOpts = {'nFilterBins',nSimBins,'typicalGain',1};
@@ -183,7 +190,7 @@ simBinSeparation = (2*pi/nSimBins);
 simBinCenters = 0:simBinSeparation:(2*pi)-simBinSeparation;
 FWHM = simBinSeparation;
 sigma = FWHM/(2*sqrt(2*log(2)));
-kappa = 1/sigma^2;
+kappa = 1/(10*sigma^2);
 x0(nFixedParams+1:nSimBins+nFixedParams) = binWeightMax.*circ_vmpdf(simBinCenters,preferredDirection,kappa);
 
 % Get the simulated neural signal for the x params. To do so, we pass zeros
@@ -230,7 +237,7 @@ if makePlots
     figure
     subplot(4,1,1);
     thisVec = stimulus{1};
-    plot(headingTime,thisVec,'-k');
+    plot(headingTime(nDTsToPad:end),thisVec(nDTsToPad:end),'-k');
     hold on
     xlabel('time [seconds]');
     ylabel('heading [rads]');
@@ -268,6 +275,7 @@ if makePlots
     ylabel('model parameter');
     xlabel('bin centers [rads]');
     title('simulated and recovered bin amplitude');
+    xlim([0 2*pi]);
 end
 
 end
