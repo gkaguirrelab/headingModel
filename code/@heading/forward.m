@@ -61,11 +61,15 @@ kappa = 1/sigma^2;
 
 % Loop over the number of filter bins and create the von Misses
 % distributions
+
 neuralSignal = zeros(size(stimulus));
-for ii = 1:nFilterBins
-    thisFilterResponse = x(nFixedParamsAdapt+nFixedParamsOther+ii) .* circ_vmpdf(stimulus,binCenters(ii),kappa);
-    neuralSignal = neuralSignal + thisFilterResponse;
-end
+FilterResponse=circ_vmpdf(stimulus,binCenters,kappa);
+FilterWeights=x(nFixedParamsAdapt+nFixedParamsOther+1:end-3);
+neuralSignal = sum(FilterResponse.*FilterWeights, 2);
+% for ii = 1:nFilterBins
+%     thisFilterResponse = x(nFixedParamsAdapt+nFixedParamsOther+ii) .* circ_vmpdf(stimulus,binCenters(ii),kappa);
+%     neuralSignal = neuralSignal + thisFilterResponse;
+% end
 
 % Define an empty heading change vector
 headingChange = zeros(size(stimulus),class(stimulus));
