@@ -95,6 +95,8 @@ classdef heading < handle
         % The lasso regression penalty for the bin weights
         lassoRegularization
         
+        % The filter response, using circular gaussian function
+        filterResponse
     end
     
     % These may be modified after object creation
@@ -179,7 +181,6 @@ classdef heading < handle
             obj.nFilterBins = p.Results.nFilterBins;
             nHRFParams = 3;
             obj.nParams = obj.nFixedParamsAdapt +  obj.nFixedParamsOther + p.Results.nFilterBins + nHRFParams;
-            
             % Define the stimLabels
             if ~isempty(p.Results.stimLabels)
                 stimLabels = p.Results.stimLabels;
@@ -221,9 +222,15 @@ classdef heading < handle
                 stimulus{ii} = stimulus{ii}';
                 stimAcqGroups{ii} = ii*ones(size(stimulus{ii},1),1);
             end
+            
             obj.stimulus = catcell(1,stimulus);
             obj.stimAcqGroups = catcell(1,stimAcqGroups);
-            
+            binSeparation = (2*pi/obj.nFilterBins);
+            binCenters = 0:binSeparation:(2*pi)-binSeparation;
+            FWHM = binSeparation;
+            sigma = FWHM/(2*sqrt(2*log(2)));
+            kappa = 1/sigma^2;
+            obj.filterResponse=circ_vmpdf(obj.stimulus,binCenters,kappa);
             % Construct and / or check stimTime
             if isempty(p.Results.stimTime)
                 % If stimTime is empty, check to make sure that the length

@@ -25,11 +25,11 @@ stimulus = obj.stimulus;
 stimAcqGroups = obj.stimAcqGroups;
 stimTime = obj.stimTime;
 nParams = obj.nParams;
-nFilterBins = obj.nFilterBins;
+% nFilterBins = obj.nFilterBins;
 dataTime = obj.dataTime;
 nFixedParamsAdapt = obj.nFixedParamsAdapt;
 nFixedParamsOther = obj.nFixedParamsOther;
-
+filterResponse=obj.filterResponse;
 % Break the parameters of x into named variables for code transparency
 
 % These are the heading change variables
@@ -44,8 +44,8 @@ epsilon = x(2);     % Non-linear exponent of the neural signal
 % a concentration parameter kappa.
 
 % Set the bin centers as evenly spaced in radians 
-binSeparation = (2*pi/nFilterBins);
-binCenters = 0:binSeparation:(2*pi)-binSeparation;
+% binSeparation = (2*pi/nFilterBins);
+% binCenters = 0:binSeparation:(2*pi)-binSeparation;
 
 % We fix the value of kappa to match the width that was used in prior
 % linear model fitting work. This prior work had used 45 bins and thus had
@@ -55,17 +55,17 @@ binCenters = 0:binSeparation:(2*pi)-binSeparation;
 % And that :
 %   1/kappa = sigma^2;
 % This gives us:
-FWHM = binSeparation;
-sigma = FWHM/(2*sqrt(2*log(2)));
-kappa = 1/sigma^2;
+% FWHM = binSeparation;
+% sigma = FWHM/(2*sqrt(2*log(2)));
+% kappa = 1/sigma^2;
 
 % Loop over the number of filter bins and create the von Misses
 % distributions
 
-neuralSignal = zeros(size(stimulus));
-FilterResponse=circ_vmpdf(stimulus,binCenters,kappa);
+% FilterResponse=circ_vmpdf(stimulus,binCenters,kappa);
 FilterWeights=x(nFixedParamsAdapt+nFixedParamsOther+1:end-3);
-neuralSignal = sum(FilterResponse.*FilterWeights, 2);
+neuralSignal = sum(filterResponse.*FilterWeights, 2);
+% neuralSignal = zeros(size(stimulus));
 % for ii = 1:nFilterBins
 %     thisFilterResponse = x(nFixedParamsAdapt+nFixedParamsOther+ii) .* circ_vmpdf(stimulus,binCenters(ii),kappa);
 %     neuralSignal = neuralSignal + thisFilterResponse;
