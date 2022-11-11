@@ -34,31 +34,10 @@ filterResponse=obj.filterResponse;
 adaptGain = x(1);   % Gain of the adaptation effect
 epsilon = x(2);     % Non-linear exponent of the neural signal
 tau = x(3);         % Time constant of the temporal integration
-% Currently not using x(4)
 
 %% Build a model of absolute heading direction
-% To start we will model a single preferred heading directon with a
-% the von Misses distribution. This function takes a center in radians and
-% a concentration parameter kappa.
-
-% Set the bin centers as evenly spaced in radians 
-% binSeparation = (2*pi/nFilterBins);
-% binCenters = 0:binSeparation:(2*pi)-binSeparation;
-
-% We fix the value of kappa to match the width that was used in prior
-% linear model fitting work. This prior work had used 45 bins and thus had
-% (360/45) = 8° bin separation. The bin FWHM was set equal to this. Given
-% the Gaussian relationship of:
-%   FWHM = 2*sqrt(2*log(2)å)*sigma ~= 2.355*sigma
-% And that :
-%   1/kappa = sigma^2;
-% This gives us:
-% FWHM = binSeparation;
-% sigma = FWHM/(2*sqrt(2*log(2)));
-% kappa = 1/sigma^2;
-
 % We have loaded the stored filter bank from the object properties.
-% We now apply the filter weights as a single matrix multiplication.
+% Apply the filter weights as a single matrix multiplication.
 FilterWeights=x(nFixedParamsAdapt+nFixedParamsOther+1:end-3);
 neuralSignal = sum(filterResponse.*FilterWeights, 2);
 
@@ -76,9 +55,7 @@ exponentialIRF = exponentialIRF/sum(exponentialIRF);
 headingChange = zeros(size(stimulus),class(stimulus));
 
 % Loop over acquisitions and obtain the absolute, circular value of the
-% first derivative of the heading vector. At some stage, we should expand
-% this to handle integration over events further back in time, perhaps
-% under the influenve of 
+% first derivative of the heading vector. 
 for run = 1:max(stimAcqGroups)
     temp = stimulus(stimAcqGroups==run);
     headingChange(stimAcqGroups==run,:) = [0;abs(angdiff(temp))];
