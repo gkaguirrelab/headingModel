@@ -225,8 +225,24 @@ classdef heading < handle
             
             obj.stimulus = catcell(1,stimulus);
             obj.stimAcqGroups = catcell(1,stimAcqGroups);
+            
+            %% Build a model of absolute heading direction
+            % To start we will model a single preferred heading directon with a
+            % the von Misses distribution. This function takes a center in radians and
+            % a concentration parameter kappa.
+            % Set the bin centers as evenly spaced in radians 
+            % We fix the value of kappa to match the width that was used in prior
+            % linear model fitting work. This prior work had used 45 bins and thus had
+            % (360/45) = 8° bin separation. 
             binSeparation = (2*pi/obj.nFilterBins);
             binCenters = 0:binSeparation:(2*pi)-binSeparation;
+            % The bin FWHM was set equal to this. Given
+            % the Gaussian relationship of:
+            %   FWHM = 2*sqrt(2*log(2)å)*sigma ~= 2.355*sigma
+            % And that :
+            %   1/kappa = sigma^2;
+            % This gives us:
+            
             FWHM = binSeparation;
             sigma = FWHM/(2*sqrt(2*log(2)));
             kappa = 1/sigma^2;
