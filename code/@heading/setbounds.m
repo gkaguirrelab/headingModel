@@ -8,7 +8,6 @@ function setbounds(obj)
 %   Bounds for the prf_timeShift model. Rationale is as follows:
 % - gain
 % - exponent
-% - cardinal multiplier
 % - time-constant
 %
 %   These are specified as 1 x nParams vectors.
@@ -42,14 +41,10 @@ ub(1) = Inf;              % gain
 lb(2) = 0.1;             % exponent
 ub(2) = 3;              % exponent
 
-% The sigma bounds are adjusted by the number of filter bins
-lb(3) = (2*pi/nFilterBins)*2;
-ub(3) = (2*pi/nFilterBins)*2;
-
-% The time-constant parameter is bounded by zero at the low end, and by 2
-% seconds at the high end. Currently unused
-%lb(3) = 0.01;          % time constant in seconds
-%ub(3) = 2;            % time constant in seconds
+% The tau parameter of the exponential integrator of heading change
+% in unites of seconds
+lb(3) = 1e-2;
+ub(3) = 10;
 
 % These are the parameters that define a filter bank of absolute effect of
 % preferred heading direction
