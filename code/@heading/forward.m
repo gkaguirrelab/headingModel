@@ -25,66 +25,37 @@ stimulus = obj.stimulus;
 stimAcqGroups = obj.stimAcqGroups;
 stimTime = obj.stimTime;
 nParams = obj.nParams;
-% nFilterBins = obj.nFilterBins;
 dataTime = obj.dataTime;
 nFixedParamsAdapt = obj.nFixedParamsAdapt;
 nFixedParamsOther = obj.nFixedParamsOther;
 filterResponse=obj.filterResponse;
-% Break the parameters of x into named variables for code transparency
 
-% These are the heading change variables
+% Break the parameters of x into named variables for code transparency
 adaptGain = x(1);   % Gain of the adaptation effect
 epsilon = x(2);     % Non-linear exponent of the neural signal
-%tau = x(3);         % Time constant of the temporal integration
-% Currently not using x(4)
+tau = x(3);         % Time constant of the temporal integration
 
 %% Build a model of absolute heading direction
-% To start we will model a single preferred heading directon with a
-% the von Misses distribution. This function takes a center in radians and
-% a concentration parameter kappa.
-
-% Set the bin centers as evenly spaced in radians 
-% binSeparation = (2*pi/nFilterBins);
-% binCenters = 0:binSeparation:(2*pi)-binSeparation;
-
-% We fix the value of kappa to match the width that was used in prior
-% linear model fitting work. This prior work had used 45 bins and thus had
-% (360/45) = 8° bin separation. The bin FWHM was set equal to this. Given
-% the Gaussian relationship of:
-%   FWHM = 2*sqrt(2*log(2)å)*sigma ~= 2.355*sigma
-% And that :
-%   1/kappa = sigma^2;
-% This gives us:
-% FWHM = binSeparation;
-% sigma = FWHM/(2*sqrt(2*log(2)));
-% kappa = 1/sigma^2;
-
-% Loop over the number of filter bins and create the von Misses
-% distributions
-
-% FilterResponse=circ_vmpdf(stimulus,binCenters,kappa);
+% We have loaded the stored filter bank from the object properties.
+% Apply the filter weights as a single matrix multiplication.
 FilterWeights=x(nFixedParamsAdapt+nFixedParamsOther+1:end-3);
 neuralSignal = sum(filterResponse.*FilterWeights, 2);
-% neuralSignal = zeros(size(stimulus));
-% for ii = 1:nFilterBins
-%     thisFilterResponse = x(nFixedParamsAdapt+nFixedParamsOther+ii) .* circ_vmpdf(stimulus,binCenters(ii),kappa);
-%     neuralSignal = neuralSignal + thisFilterResponse;
-% end
+
+% Obtain the temporal support for one the stimulus for one acquisition
+stimTimeSingleAcq = stimTime(stimAcqGroups==1);
+
+% Create an exponential kernel under the contol of tau (in units of
+% seconds)
+exponentialIRF = exp(-1/tau*stimTimeSingleAcq);
+
+% Normalize the kernel to have unit area
+exponentialIRF = exponentialIRF/sum(exponentialIRF);
 
 % Define an empty heading change vector
 headingChange = zeros(size(stimulus),class(stimulus));
 
-% Create an exponential kernel under the contol of tau (in units of
-% seconds)
-%exponentialIRF = exp(-1/tau*dataTimeSingleAcq);
-
-% Normalize the kernel to have unit initial value
-%exponentialIRF = exponentialIRF/exponentialIRF(1);
-
 % Loop over acquisitions and obtain the absolute, circular value of the
-% first derivative of the heading vector. At some stage, we should expand
-% this to handle integration over events further back in time, perhaps
-% under the influenve of 
+% first derivative of the heading vector. 
 for run = 1:max(stimAcqGroups)
     temp = stimulus(stimAcqGroups==run);
     headingChange(stimAcqGroups==run,:) = [0;abs(angdiff(temp))];
@@ -95,11 +66,8 @@ end
 % parameter value of 1 provides a linear mapping).
 headingChange = headingChange.^epsilon;
 
-% Obtain the temporal support for one acquisition
-dataTimeSingleAcq = dataTime(stimAcqGroups==1);
-
 % Apply the exponential kernel to the heading time series
-%headingChange = conv2run(headingChange,exponentialIRF,stimAcqGroups);
+headingChange = conv2run(headingChange,exponentialIRF,stimAcqGroups);
 
 % Scale the stimulus matrix by the gain parameter
 neuralSignal = neuralSignal + headingChange*adaptGain;
