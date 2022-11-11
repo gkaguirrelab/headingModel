@@ -26,7 +26,7 @@ function x0 = initial(obj)
 nParams = obj.nParams;
 nFilterBins = obj.nFilterBins;
 nFixedParamsAdapt = obj.nFixedParamsAdapt;
-nFixedParamsOther = obj.nFixedParamsOther;
+% nFixedParamsOther = obj.nFixedParamsOther;
 
 % Assign the x0 variable
 x0 = zeros(1,nParams);
@@ -36,7 +36,7 @@ x0(1) = 0; % gain
 x0(2) = 1; % exponent
 x0(3) = 1; % tau (in seconds) of the exponential integrator of heading direction
 
-x0(nFixedParamsAdapt+nFixedParamsOther+1:nFixedParamsAdapt+nFixedParamsOther+nFilterBins) = 0;       % zero initial gain for direction filter bank
+x0(nFixedParamsAdapt+1:nFixedParamsAdapt+nFilterBins) = 0;       % zero initial gain for direction filter bank
 
 switch obj.hrfType
     case 'flobs'

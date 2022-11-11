@@ -38,7 +38,7 @@ classdef heading < handle
 
         % The number of other fixed parameters of the model, besides
         % adaptation, the hrf, and the set of filter bank weights
-        nFixedParamsOther
+%         nFixedParamsOther
 
         % The number of parameters in the model
         nParams
@@ -173,14 +173,15 @@ classdef heading < handle
             % These are the parameters, corresponding to:
             % - gain
             % - exponent
+            % - tau
             % - sigma of the filter bins
             % - a variable number of parameters for an absolute heading direction model
             % - 3 parameters of the FLOBS HRF
-            obj.nFixedParamsAdapt = 2;
-            obj.nFixedParamsOther = 1;
+            obj.nFixedParamsAdapt = 3;
+%             obj.nFixedParamsOther = 1;
             obj.nFilterBins = p.Results.nFilterBins;
             nHRFParams = 3;
-            obj.nParams = obj.nFixedParamsAdapt +  obj.nFixedParamsOther + p.Results.nFilterBins + nHRFParams;
+            obj.nParams = obj.nFixedParamsAdapt + p.Results.nFilterBins + nHRFParams;
             % Define the stimLabels
             if ~isempty(p.Results.stimLabels)
                 stimLabels = p.Results.stimLabels;
@@ -197,7 +198,7 @@ classdef heading < handle
             
             % Define the fix and float param sets. We will always search
             % over the nFixedParamsOther and the nFilterBins
-            floatSet = [obj.nFixedParamsAdapt+1:obj.nFixedParamsAdapt+obj.nFixedParamsOther+obj.nFilterBins];
+            floatSet = [obj.nFixedParamsAdapt+1:obj.nFixedParamsAdapt+obj.nFilterBins];
             fixSet = [];
 
             if p.Results.hrfSearch

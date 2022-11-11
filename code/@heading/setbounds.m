@@ -26,7 +26,7 @@ function setbounds(obj)
 nParams = obj.nParams;
 nFilterBins = obj.nFilterBins;
 nFixedParamsAdapt = obj.nFixedParamsAdapt;
-nFixedParamsOther = obj.nFixedParamsOther;
+% nFixedParamsOther = obj.nFixedParamsOther;
 
 % Define outputs
 lb = nan(1,nParams);
@@ -48,8 +48,8 @@ ub(3) = 10;
 
 % These are the parameters that define a filter bank of absolute effect of
 % preferred heading direction
-lb(nFixedParamsAdapt+nFixedParamsOther+1:nFixedParamsAdapt+nFixedParamsOther+nFilterBins) = -Inf; % gain of this filter
-ub(nFixedParamsAdapt+nFixedParamsOther+1:nFixedParamsAdapt+nFixedParamsOther+nFilterBins) = Inf;  % gain of this filter
+lb(nFixedParamsAdapt+1:nFixedParamsAdapt+nFilterBins) = -Inf; % gain of this filter
+ub(nFixedParamsAdapt+1:nFixedParamsAdapt+nFilterBins) = Inf;  % gain of this filter
 
 % The HRF shape parameters vary by model type
 switch obj.hrfType

@@ -27,7 +27,7 @@ stimTime = obj.stimTime;
 nParams = obj.nParams;
 dataTime = obj.dataTime;
 nFixedParamsAdapt = obj.nFixedParamsAdapt;
-nFixedParamsOther = obj.nFixedParamsOther;
+% nFixedParamsOther = obj.nFixedParamsOther;
 filterResponse=obj.filterResponse;
 
 % Break the parameters of x into named variables for code transparency
@@ -38,7 +38,7 @@ tau = x(3);         % Time constant of the temporal integration
 %% Build a model of absolute heading direction
 % We have loaded the stored filter bank from the object properties.
 % Apply the filter weights as a single matrix multiplication.
-FilterWeights=x(nFixedParamsAdapt+nFixedParamsOther+1:end-3);
+FilterWeights=x(nFixedParamsAdapt+1:end-3);
 neuralSignal = sum(filterResponse.*FilterWeights, 2);
 
 % Obtain the temporal support for one the stimulus for one acquisition

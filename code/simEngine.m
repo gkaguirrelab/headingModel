@@ -22,6 +22,7 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
 %                           corresponding to:
 %                             - adaptation gain
 %                             - adaptation exponent
+%                             - adaptation tau
 %  'lassoRegularization'  - The regularization on the lasso penalty that is
 %                           derived from the filter bin weights
 %  'nSimBins'             - The number of filter bins to use in creating
@@ -38,7 +39,7 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
 %  'makePlots'            - Flag to control if plots are produced
 %
 % Outputs:
-%   x0, x1                - Vectors. The modeled and recovered params.
+%   x0, x1, x2            - Vectors. The modeled and recovered params.
 %
 % Examples:
 %{
@@ -65,13 +66,14 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
 %{
     % Set some fixed parameters, and see if we can recover them, including
     % an interpolated preferred heading direction.
-    fixedParams = [0.25 0.8];
+    fixedParams = [0.25 1 2];
     nBins = 45;
-    useRealHeading = true; hrfSearch = true; adaptSearch = false;
+    useRealHeading = true; hrfSearch = false; adaptSearch = true;
     [x0, x1] = simEngine(2,1,fixedParams,0.05,nBins,nBins,...
         useRealHeading,hrfSearch,adaptSearch);
     fprintf('simulated and recovered adaptation gain: [%2.2f, %2.2f] \n',x0(1),x1(1));
     fprintf('simulated and recovered adaptation exponent: [%2.2f, %2.2f] \n',x0(2),x1(2));
+    fprintf('simulated and recovered tau: [%2.2f, %2.2f] \n',x0(3),x1(3));
     % Obtain the interpolated peak of the preferred heading direction
     binSupportFit = 1:0.01:nBins;
     directionSupportFit = linspace(0,2*pi-(2*pi/nBins),length(binSupportFit));
@@ -90,7 +92,7 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
 arguments
     noiseScale {isscalar,mustBeNumeric} = 1
     binWeightMax {isscalar,mustBeNumeric} = 1
-    fixedParamVector {isvector,mustBeNumeric} = [0, 1]
+    fixedParamVector {isvector,mustBeNumeric} = [0, 1, 1]
     lassoRegularization {isscalar,mustBeNumeric} = 0.05
     nSimBins {isscalar,mustBeNumeric} = 45;       % how many bins to simulate in the signal generation
     nFitBins {isscalar,mustBeNumeric} = 45;   % how many filters in the decoding model
@@ -111,7 +113,7 @@ end
 %     modeling effort.
 tr = 2;
 preferredDirection = pi;
-nFixedParams = 3; % corresponding to the adaptation gain, epsilon, and the sigma of the filter bins
+nFixedParams = 3; % corresponding to the adaptation gain, epsilon, tau
 
 % The temporal sampling interval (in seconds) of the heading direction
 % vector
