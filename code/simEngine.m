@@ -69,7 +69,7 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
     fixedParams = [0.25 1 2];
     nBins = 45;
     useRealHeading = true; hrfSearch = false; adaptSearch = true;
-    [x0, x1] = simEngine(2,1,fixedParams,0.05,nBins,nBins,...
+    [x0, x1] = simEngine(0,1,fixedParams,0.05,nBins,nBins,...
         useRealHeading,hrfSearch,adaptSearch);
     fprintf('simulated and recovered adaptation gain: [%2.2f, %2.2f] \n',x0(1),x1(1));
     fprintf('simulated and recovered adaptation exponent: [%2.2f, %2.2f] \n',x0(2),x1(2));

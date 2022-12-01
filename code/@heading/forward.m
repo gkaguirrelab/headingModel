@@ -34,7 +34,7 @@ filterResponse=obj.filterResponse;
 adaptGain = x(1);   % Gain of the adaptation effect
 epsilon = x(2);     % Non-linear exponent of the neural signal
 tau = x(3);         % Time constant of the temporal integration
-
+muu = x(4);         % proportion of prior updated to the current heading
 %% Build a model of absolute heading direction
 % We have loaded the stored filter bank from the object properties.
 % Apply the filter weights as a single matrix multiplication.
@@ -58,7 +58,29 @@ headingChange = zeros(size(stimulus),class(stimulus));
 % first derivative of the heading vector. 
 for run = 1:max(stimAcqGroups)
     temp = stimulus(stimAcqGroups==run);
-    headingChange(stimAcqGroups==run,:) = [0;abs(angdiff(temp))];
+    % headingChange(stimAcqGroups==run,:) = [0;abs(angdiff(temp))];
+    % calculate the heading prior
+    r0=temp(1);
+    headingPrior = zeros(size(temp));
+    headingPrior(1)=r0;
+    for n=2:length(tmp)
+        currentHeading=headingRun(n);
+        angChange=angdiff(r0,currentHeading);
+%         angChange=pi+angChange;
+%         if angChange<0
+%             angChange=2*pi+angChange;
+%         end
+%         angChange=mod(angChange,2*pi);
+        r=r0+(1-muu)*angChange;
+%         if r>2*pi
+%             r=mod(r,2*pi);
+%         end
+        r0=r;
+        headingPrior(n)=r;
+    end
+    % adaptation defined as the ang difference between the prior and
+    % heading
+    headingChange(stimAcqGroups==run,:) = angdiff(headingPrior,temp);
 end
 
 % Apply an exponential parameter to produce a compressive or expansive

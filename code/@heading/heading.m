@@ -174,10 +174,10 @@ classdef heading < handle
             % - gain
             % - exponent
             % - tau
-            % - sigma of the filter bins
+            % - muu
             % - a variable number of parameters for an absolute heading direction model
             % - 3 parameters of the FLOBS HRF
-            obj.nFixedParamsAdapt = 3;
+            obj.nFixedParamsAdapt = 4;
 %             obj.nFixedParamsOther = 1;
             obj.nFilterBins = p.Results.nFilterBins;
             nHRFParams = 3;

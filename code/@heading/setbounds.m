@@ -38,13 +38,17 @@ ub(1) = Inf;              % gain
 
 % Raise the heading change to an exponent to support compressive /
 % expansive non-linearities
-lb(2) = 0.1;             % exponent
-ub(2) = 3;              % exponent
+lb(2) = 0.8; %0.1;             % exponent
+ub(2) = 0.8; %3;              % exponent
 
 % The tau parameter of the exponential integrator of heading change
 % in unites of seconds
 lb(3) = 1e-2;
 ub(3) = 10;
+
+% The muu parameter of the adaptation effect between 0 and 1
+lb(4) = 0;
+ub(4) = 1;
 
 % These are the parameters that define a filter bank of absolute effect of
 % preferred heading direction

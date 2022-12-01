@@ -35,7 +35,7 @@ x0 = zeros(1,nParams);
 x0(1) = 0; % gain
 x0(2) = 1; % exponent
 x0(3) = 1; % tau (in seconds) of the exponential integrator of heading direction
-
+x0(4) = 0; % muu no memory at all
 x0(nFixedParamsAdapt+1:nFixedParamsAdapt+nFilterBins) = 0;       % zero initial gain for direction filter bank
 
 switch obj.hrfType
