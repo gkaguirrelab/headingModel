@@ -63,8 +63,8 @@ for run = 1:max(stimAcqGroups)
     r0=temp(1);
     headingPrior = zeros(size(temp));
     headingPrior(1)=r0;
-    for n=2:length(tmp)
-        currentHeading=headingRun(n);
+    for n=2:length(temp)
+        currentHeading=temp(n);
         angChange=angdiff(r0,currentHeading);
 %         angChange=pi+angChange;
 %         if angChange<0
