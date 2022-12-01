@@ -121,8 +121,8 @@ deltaTStim = 660/3384;
 
 % The number of seconds to pad the start of the stimulus sequence, to
 % provide some "warm up" for the model
-padTimeSecs = 8;
-nDTsToPad = round(padTimeSecs*deltaTStim);
+padTimeSecs = 8*2;
+nDTsToPad = round(padTimeSecs*(1/deltaTStim));
 
 %% Create a stimulus
 % We load a set of heading direction vectors from an example subject, and
@@ -231,7 +231,7 @@ x1 = results.params;
 % Obtain the model fit
 modelOut = heading(data,stimulus,tr,'stimTime',stimTime,modelOpts{:});
 fitSignal = modelOut.forward(x1);
-
+xAdaptWts=x1(1,1:nFixedParams);
 
 %% Make plots
 if makePlots
