@@ -33,8 +33,8 @@ filterResponse=obj.filterResponse;
 % Break the parameters of x into named variables for code transparency
 adaptGain = x(1);   % Gain of the adaptation effect
 epsilon = x(2);     % Non-linear exponent of the neural signal
-tau = x(3);         % Time constant of the temporal integration
-muu = x(4);         % proportion of prior updated to the current heading
+%tau = x(3);         % Time constant of the temporal integration
+muu = x(3);         % proportion of prior updated to the current heading
 %% Build a model of absolute heading direction
 % We have loaded the stored filter bank from the object properties.
 % Apply the filter weights as a single matrix multiplication.
@@ -46,16 +46,16 @@ stimTimeSingleAcq = stimTime(stimAcqGroups==1);
 
 % Create an exponential kernel under the contol of tau (in units of
 % seconds)
-exponentialIRF = exp(-1/tau*stimTimeSingleAcq);
+% exponentialIRF = exp(-1/tau*stimTimeSingleAcq);
 
 % Normalize the kernel to have unit area
-exponentialIRF = exponentialIRF/sum(exponentialIRF);
+% exponentialIRF = exponentialIRF/sum(exponentialIRF);
 
 % Define an empty heading change vector
-headingChange = zeros(size(stimulus),class(stimulus));
+headingChange = zeros(size(stimulus));
 
 % Loop over acquisitions and obtain the absolute, circular value of the
-% first derivative of the heading vector. 
+% difference between the prior and heading aka adaptation effect. 
 for run = 1:max(stimAcqGroups)
     temp = stimulus(stimAcqGroups==run);
     % headingChange(stimAcqGroups==run,:) = [0;abs(angdiff(temp))];
@@ -66,21 +66,15 @@ for run = 1:max(stimAcqGroups)
     for n=2:length(temp)
         currentHeading=temp(n);
         angChange=angdiff(r0,currentHeading);
-%         angChange=pi+angChange;
-%         if angChange<0
-%             angChange=2*pi+angChange;
-%         end
-%         angChange=mod(angChange,2*pi);
         r=r0+(1-muu)*angChange;
-%         if r>2*pi
-%             r=mod(r,2*pi);
-%         end
         r0=r;
         headingPrior(n)=r;
     end
-    % adaptation defined as the ang difference between the prior and
-    % heading
-    headingChange(stimAcqGroups==run,:) = angdiff(headingPrior,temp);
+    % convert to 0-2pi
+    headingPrior=wrapTo2Pi(headingPrior);
+    % adaptation defined as the absolute ang difference between the prior 
+    % and heading
+    headingChange(stimAcqGroups==run) = abs(angdiff(headingPrior,temp));
 end
 
 % Apply an exponential parameter to produce a compressive or expansive
@@ -89,7 +83,7 @@ end
 headingChange = headingChange.^epsilon;
 
 % Apply the exponential kernel to the heading time series
-headingChange = conv2run(headingChange,exponentialIRF,stimAcqGroups);
+% headingChange = conv2run(headingChange,exponentialIRF,stimAcqGroups);
 
 % Scale the stimulus matrix by the gain parameter
 neuralSignal = neuralSignal + headingChange*adaptGain;

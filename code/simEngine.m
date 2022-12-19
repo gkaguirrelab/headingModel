@@ -39,7 +39,7 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
 %  'makePlots'            - Flag to control if plots are produced
 %
 % Outputs:
-%   x0, x1, x2            - Vectors. The modeled and recovered params.
+%   x0, x1            - Vectors. The modeled and recovered params.
 %
 % Examples:
 %{
@@ -66,15 +66,14 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
 %{
     % Set some fixed parameters, and see if we can recover them, including
     % an interpolated preferred heading direction.
-    fixedParams = [0.25 1 2 0.5];
+    fixedParams = [1 1 0.9];
     nBins = 45;
     useRealHeading = true; hrfSearch = false; adaptSearch = true;
-    [x0, x1] = simEngine(0,1,fixedParams,0.05,nBins,nBins,...
+    [x0, x1] = simEngine(1,1e-6,fixedParams,0.05,nBins,nBins,...
         useRealHeading,hrfSearch,adaptSearch);
     fprintf('simulated and recovered adaptation gain: [%2.2f, %2.2f] \n',x0(1),x1(1));
     fprintf('simulated and recovered adaptation exponent: [%2.2f, %2.2f] \n',x0(2),x1(2));
-    fprintf('simulated and recovered tau: [%2.2f, %2.2f] \n',x0(3),x1(3));
-    fprintf('simulated and recovered tau: [%2.2f, %2.2f] \n',x0(4),x1(4));
+    fprintf('simulated and recovered mu: [%2.2f, %2.2f] \n',x0(3),x1(3));
     % Obtain the interpolated peak of the preferred heading direction
     binSupportFit = 1:0.01:nBins;
     directionSupportFit = linspace(0,2*pi-(2*pi/nBins),length(binSupportFit));
@@ -93,7 +92,7 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
 arguments
     noiseScale {isscalar,mustBeNumeric} = 1
     binWeightMax {isscalar,mustBeNumeric} = 1
-    fixedParamVector {isvector,mustBeNumeric} = [0, 1, 1, 0]
+    fixedParamVector {isvector,mustBeNumeric} = [0, 1, 0]
     lassoRegularization {isscalar,mustBeNumeric} = 0.05
     nSimBins {isscalar,mustBeNumeric} = 45;       % how many bins to simulate in the signal generation
     nFitBins {isscalar,mustBeNumeric} = 45;   % how many filters in the decoding model
@@ -114,8 +113,7 @@ end
 %     modeling effort.
 tr = 2;
 preferredDirection = pi;
-nFixedParams = 4; % corresponding to the adaptation gain, epsilon, tau, and
-                  % muu
+nFixedParams = 3; % corresponding to the adaptation gain, epsilon, and muu
 
 % The temporal sampling interval (in seconds) of the heading direction
 % vector
@@ -241,7 +239,7 @@ if makePlots
     figure
     subplot(4,1,1);
     thisVec = stimulus{1};
-    plot(headingTime(nDTsToPad:end),thisVec(nDTsToPad:end),'-k');
+    plot(headingTime(nDTsToPad:end),thisVec(nDTsToPad:end),'-ok');
     hold on
     xlabel('time [seconds]');
     ylabel('heading [rads]');
@@ -249,31 +247,35 @@ if makePlots
     set(gca,'YTick',0:pi/2:2*pi)
     set(gca,'YTickLabel',{'0','pi/2','pi','3*pi/2','2*pi'})
     xlim([min(headingTime) max(headingTime)]);
+%     ylim([0 2*pi]);
 
     subplot(4,1,2);
-    plot(dataTime,simSignalNeural(1:nTRs));
+    plot(dataTime,simSignalNeural(1:nTRs),'-ok');
     xlabel('time [seconds]');
     ylabel('Neural response');
-    title(sprintf('simulated neural response downsampled to TRs (bins = %d)',nSimBins));
+    title(sprintf('simulated neural response downsampled to TRs (bins=%d, gain=%s, epsilon=%s, mu=%s)'...
+        ,nSimBins,num2str(x0(1)), num2str(x0(2)), num2str(x0(3))));
     xlim([min(dataTime) max(dataTime)]);
+    ylim([-1 2.5]);
     
     subplot(4,1,3);
-    plot(dataTime,simSignalNoise(1:nTRs),'.k');
+    plot(dataTime,simSignalNoise(1:nTRs),'ok');
     hold on
-    plot(dataTime,fitSignal(1:nTRs),'-r');
+    plot(dataTime,fitSignal(1:nTRs),'-or');
     xlabel('time [seconds]');
     ylabel('BOLD response');
     title(sprintf('simulated and fitted BOLD response (bins = %d)',nSimBins));
     xlim([min(dataTime) max(dataTime)]);
+    ylim([-3 3]);
 
     % Create the bin centers used for model read-out
     modelBinSeparation = (2*pi/nFitBins);
     modelBinCenters = 0:modelBinSeparation:(2*pi)-modelBinSeparation;
 
     subplot(4,1,4);
-    plot(simBinCenters,x0(nFixedParams+1:nFixedParams+nSimBins),'-k');
+    plot(simBinCenters,x0(nFixedParams+1:nFixedParams+nSimBins),'-ok');
     hold on
-    plot(modelBinCenters,xWts,'*r');
+    plot(modelBinCenters,xWts,'or');
     set(gca,'XTick',0:pi/2:2*pi)
     set(gca,'XTickLabel',{'0','pi/2','pi','3*pi/2','2*pi'})
     ylabel('model parameter');

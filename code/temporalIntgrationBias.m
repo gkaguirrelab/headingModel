@@ -1,7 +1,7 @@
 %% calculates, for each point in time, the “prior” of current heading 
 %% direction (prior in this sense meaning an integrated average over some 
 %% time history).
-muRange = 0:0.1:0.9;
+muRange = 0:0.1:1;
 nMus=length(muRange);
 %% Obtain the vector of heading directions (not heading change; the vector 
 % of raw heading directions)
@@ -37,11 +37,6 @@ for m=1:nMus
     for n=2:nTP
         currentHeading=headingRun(n);
         angChange=angdiff(r0,currentHeading);
-%         angChange=pi+angChange;
-%         if angChange<0
-%             angChange=2*pi+angChange;
-%         end
-%         angChange=mod(angChange,2*pi);
         r=r0+(1-mu)*angChange;
 %         if r>2*pi
 %             r=mod(r,2*pi);
@@ -51,8 +46,10 @@ for m=1:nMus
     end
     subplot(1+nMus,1,m+1);
     headingPriorRun=wrapTo2Pi(headingPriorRun);
-    plot(1:nTP,headingPriorRun(1:nTP),'-ok');
-    ylim([0 2*pi]);
+    headingAdaptRun=abs(angdiff(headingPriorRun,headingRun));
+%     plot(1:nTP,headingPriorRun(1:nTP),'-o');
+    plot(1:nTP,headingAdaptRun(1:nTP),'-o');
+%     ylim([0 2*pi]);
     title(['Heading Prior (mu: ' num2str(mu) ')']);
     
 %     headingPrior{run}=headingPriorRun;
