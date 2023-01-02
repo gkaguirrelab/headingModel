@@ -74,9 +74,14 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
 %}
 %{
     % Recover adaptation and heading direction effects for the downsampled 
-    % heading direction vector
-    fixedParams = [1 1 15];
+    % heading direction vector.
+    fixedParams = [1 1 5];
     [x0,x1]=simEngine(4,0.5,fixedParams,0.05,'headingDownsampleFactor',3);
+%}
+%{
+    % Fit the bin weights only with the down-sampled heading data
+    fixedParams = [0 1 5];
+    [x0,x1]=simEngine(4,0.5,fixedParams,0.05,'adaptSearch',false,'headingDownsampleFactor',3);
 %}
 %{
     % Set some fixed parameters, and see if we can recover them, including
