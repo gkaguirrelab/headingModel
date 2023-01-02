@@ -48,7 +48,7 @@ if tau == obj.tauLast
 
 else
 
-    % Obtain the temporal support for one the stimulus for one acquisition
+    % Obtain the temporal support for one stimulus for one acquisition
     stimTimeSingleAcq = stimTime(stimAcqGroups==1);
 
     % Create an exponential kernel under the contol of tau (in units of
@@ -61,8 +61,8 @@ else
     % Convolve the unwrapped stimulus by the exponential kernel
     headingPrior = conv2run(obj.stimulusUnwrap,exponentialKernel,stimAcqGroups);
 
-    % The heading change is simply the (unwrapped) angular distance between the
-    % current heading and the integrated prior heading
+    % The heading change is simply the (unwrapped) angular distance between
+    % the current heading and the integrated prior heading
     headingChange = abs(obj.stimulusUnwrap - headingPrior);
 
     % Store the tau and headingPrior values in the object
@@ -74,8 +74,10 @@ end
 % Apply an exponential parameter to produce a compressive or expansive
 % non-linear mapping between heading change and neural response (a
 % parameter value of 1 provides a linear mapping).
+% Currently unusued
+%{
 headingChange = headingChange.^epsilon;
-
+%}
 % Scale the stimulus matrix by the gain parameter
 neuralSignal = neuralSignal + headingChange*adaptGain;
 
