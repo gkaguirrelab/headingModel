@@ -8,7 +8,6 @@ function setbounds(obj)
 %   Bounds for the prf_timeShift model. Rationale is as follows:
 % - gain
 % - exponent
-% - cardinal multiplier
 % - time-constant
 %
 %   These are specified as 1 x nParams vectors.
@@ -27,7 +26,7 @@ function setbounds(obj)
 nParams = obj.nParams;
 nFilterBins = obj.nFilterBins;
 nFixedParamsAdapt = obj.nFixedParamsAdapt;
-nFixedParamsOther = obj.nFixedParamsOther;
+% nFixedParamsOther = obj.nFixedParamsOther;
 
 % Define outputs
 lb = nan(1,nParams);
@@ -39,45 +38,34 @@ ub(1) = Inf;              % gain
 
 % Raise the heading change to an exponent to support compressive /
 % expansive non-linearities
-lb(2) = 0.1;             % exponent
-ub(2) = 3;              % exponent
+lb(2) = 1; %0.1;             % exponent
+ub(2) = 1; %3;              % exponent
 
-% The sigma bounds are adjusted by the number of filter bins
-lb(3) = (2*pi/nFilterBins)*2;
-ub(3) = (2*pi/nFilterBins)*2;
-
-% The time-constant parameter is bounded by zero at the low end, and by 2
-% seconds at the high end. Currently unused
-%lb(3) = 0.01;          % time constant in seconds
-%ub(3) = 2;            % time constant in seconds
+% The tau parameter of the exponential integrator of heading change
+% in unites of seconds
+lb(3) = 1e-2;
+ub(3) = 20;
 
 % These are the parameters that define a filter bank of absolute effect of
 % preferred heading direction
-lb(nFixedParamsAdapt+nFixedParamsOther+1:nFixedParamsAdapt+nFixedParamsOther+nFilterBins) = -Inf; % gain of this filter
-ub(nFixedParamsAdapt+nFixedParamsOther+1:nFixedParamsAdapt+nFixedParamsOther+nFilterBins) = Inf;  % gain of this filter
+lb(nFixedParamsAdapt+1:nFixedParamsAdapt+nFilterBins) = -Inf; % gain of this filter
+ub(nFixedParamsAdapt+1:nFixedParamsAdapt+nFilterBins) = Inf;  % gain of this filter
 
-% The HRF shape parameters vary by model type
-switch obj.hrfType
-    case 'flobs'
-        
-        % Object properties associated with the FLOBS eigenvectors
-        mu = obj.mu;
-        C = obj.C;
-        
-        % Set bounds at +-15SDs of the norm distributions of the FLOBS
-        % parameters
-        sd15 = 15*diag(C)';
-        
-        lb(nParams-2:nParams) = mu-sd15;	% FLOBS eigen1, 2, 3
-        ub(nParams-2:nParams) = mu+sd15;	% FLOBS eigen1, 2, 3
+% Object properties associated with the FLOBS eigenvectors
+mu = obj.mu;
+C = obj.C;
 
-    case 'gamma'
-        lb(nParams-2:nParams) = [2 6 0];	% Gamma1,2, and undershoot gain
-        ub(nParams-2:nParams) = [8 12 2];	% Gamma1,2, and undershoot gain
+% Set bounds at +-5SDs of the norm distributions of the FLOBS
+% parameters
+sd15 = 5*diag(C)';
 
-    otherwise
-        error('Not a valid hrfType')
-end
+lb(nParams-2:nParams) = mu-sd15;	% FLOBS eigen1, 2, 3
+ub(nParams-2:nParams) = mu+sd15;	% FLOBS eigen1, 2, 3
+
+% Lock the 3rd parameter; we find that the HRF search is
+% over-fitting the data
+lb(nParams) = mu(3);
+ub(nParams) = mu(3);
 
 % Store the bounds in the object
 obj.lb = lb;

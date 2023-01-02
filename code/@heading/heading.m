@@ -36,10 +36,6 @@ classdef heading < handle
         % The number of parameters dedicated to the adaptation model
         nFixedParamsAdapt
 
-        % The number of other fixed parameters of the model, besides
-        % adaptation, the hrf, and the set of filter bank weights
-        nFixedParamsOther
-
         % The number of parameters in the model
         nParams
         
@@ -89,14 +85,20 @@ classdef heading < handle
         % A time x 1 vector that defines the HRF convolution kernel
         hrf
         
-        % The type of HRF model, including {'flobs','gamma'};
-        hrfType
-
         % The lasso regression penalty for the bin weights
         lassoRegularization
+
+        % The unwrapped stimulus
+        stimulusUnwrap
         
         % The filter response, using circular gaussian function
         filterResponse
+
+        % We store the tauLast and headingChangeLast to avoid
+        % re-computing these if tau has not changed
+        tauLast
+        headingChangeLast
+
     end
     
     % These may be modified after object creation
@@ -144,7 +146,6 @@ classdef heading < handle
             p.addParameter('typicalGain',300,@isscalar);
             p.addParameter('nFilterBins',8,@isscalar);
             p.addParameter('adaptSearch',true,@islogical);            
-            p.addParameter('hrfType','flobs',@ischar);            
             p.addParameter('hrfSearch',true,@islogical);            
             p.addParameter('lassoRegularization',0.05,@isscalar);           
             p.addParameter('verbose',true,@islogical);
@@ -173,14 +174,14 @@ classdef heading < handle
             % These are the parameters, corresponding to:
             % - gain
             % - exponent
-            % - sigma of the filter bins
+            % - tau
             % - a variable number of parameters for an absolute heading direction model
             % - 3 parameters of the FLOBS HRF
-            obj.nFixedParamsAdapt = 2;
-            obj.nFixedParamsOther = 1;
+            obj.nFixedParamsAdapt = 3;
             obj.nFilterBins = p.Results.nFilterBins;
             nHRFParams = 3;
-            obj.nParams = obj.nFixedParamsAdapt +  obj.nFixedParamsOther + p.Results.nFilterBins + nHRFParams;
+            obj.nParams = obj.nFixedParamsAdapt + p.Results.nFilterBins + nHRFParams;
+
             % Define the stimLabels
             if ~isempty(p.Results.stimLabels)
                 stimLabels = p.Results.stimLabels;
@@ -197,7 +198,10 @@ classdef heading < handle
             
             % Define the fix and float param sets. We will always search
             % over the nFixedParamsOther and the nFilterBins
-            floatSet = [obj.nFixedParamsAdapt+1:obj.nFixedParamsAdapt+obj.nFixedParamsOther+obj.nFilterBins];
+            obj.fixSet = {1:obj.nParams-3, 1:obj.nParams-3};
+            obj.floatSet = {obj.nParams-2:obj.nParams, obj.nParams-2:obj.nParams};
+
+            floatSet = [obj.nFixedParamsAdapt+1:obj.nFixedParamsAdapt+obj.nFilterBins];
             fixSet = [];
 
             if p.Results.hrfSearch
@@ -215,22 +219,24 @@ classdef heading < handle
             obj.floatSet = {floatSet};
             obj.fixSet = {fixSet};
 
-            % Create the stimAcqGroups variable. Concatenate the cells and
-            % store in the object.
+            % Create the stimulus and stimAcqGroups variables. Concatenate
+            % the cells and store in the object.
             for ii=1:length(stimulus)
                 % Transpose the stimulus matrix within cells
                 stimulus{ii} = stimulus{ii}';
                 stimAcqGroups{ii} = ii*ones(size(stimulus{ii},1),1);
-            end
-            
+            end            
             obj.stimulus = catcell(1,stimulus);
             obj.stimAcqGroups = catcell(1,stimAcqGroups);
-            binSeparation = (2*pi/obj.nFilterBins);
-            binCenters = 0:binSeparation:(2*pi)-binSeparation;
-            FWHM = binSeparation;
-            sigma = FWHM/(2*sqrt(2*log(2)));
-            kappa = 1/sigma^2;
-            obj.filterResponse=circ_vmpdf(obj.stimulus,binCenters,kappa);
+            
+            % Create an unwrapped version of the stimulus to be used later.
+            % Do so while respecting acquisition boundaries
+            stimulusUnwrap = nan(size(obj.stimulus));
+            for ii=1:length(stimulus)
+                stimulusUnwrap(obj.stimAcqGroups==ii) = unwrap(stimulus{ii});
+            end
+            obj.stimulusUnwrap = stimulusUnwrap;
+
             % Construct and / or check stimTime
             if isempty(p.Results.stimTime)
                 % If stimTime is empty, check to make sure that the length
@@ -272,7 +278,19 @@ classdef heading < handle
                     error('forwardModelObj:timeMismatch','The stimTime vectors are not equal in length to the stimuli');
                 end
             end
-            
+
+            % Create and store the bank of filters that will be used to
+            % model absolute heading direction
+            binSeparation = (2*pi/obj.nFilterBins);
+            binCenters = 0:binSeparation:(2*pi)-binSeparation;
+            sigma = binSeparation/(2*sqrt(2*log(2)));
+            kappa = 1/sigma^2;
+            obj.filterResponse=circ_vmpdf(obj.stimulus,binCenters,kappa);
+
+            % Initialize the tau and exponential kernel storage
+            obj.tauLast = nan;
+            obj.headingChangeLast = nan;
+
             % Done with these big variables
             clear data stimulus stimTime acqGroups
             
@@ -280,7 +298,6 @@ classdef heading < handle
             obj.payload = p.Results.payload;
             obj.polyDeg = p.Results.polyDeg;
             obj.typicalGain = p.Results.typicalGain;
-            obj.hrfType = p.Results.hrfType;
             obj.verbose = p.Results.verbose;
             
             % Create and cache the flobs basis

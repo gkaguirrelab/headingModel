@@ -26,7 +26,7 @@ function x0 = initial(obj)
 nParams = obj.nParams;
 nFilterBins = obj.nFilterBins;
 nFixedParamsAdapt = obj.nFixedParamsAdapt;
-nFixedParamsOther = obj.nFixedParamsOther;
+mu = obj.mu;
 
 % Assign the x0 variable
 x0 = zeros(1,nParams);
@@ -34,18 +34,13 @@ x0 = zeros(1,nParams);
 % Assemble X0
 x0(1) = 0; % gain
 x0(2) = 1; % exponent
-x0(3) = 2*pi/nFilterBins; % sigma of the filter bins set to the distance between filter centers
+x0(3) = 1; % tau=1 (in seconds) of the exponential integrator of heading direction
 
-x0(nFixedParamsAdapt+nFixedParamsOther+1:nFixedParamsAdapt+nFixedParamsOther+nFilterBins) = 0;       % zero initial gain for direction filter bank
+% zero initial gain for direction filter bank
+x0(nFixedParamsAdapt+1:nFixedParamsAdapt+nFilterBins) = 0;
 
-switch obj.hrfType
-    case 'flobs'
-        x0(nParams-2:nParams) = [0.86, 0.09, 0.01]; % FLOBS eigen1, 2, 3
-    case 'gamma'
-        x0(nParams-2:nParams) = [6, 10, 0.1]; % Gamma params
-    otherwise
-        error('Not a valid hrfType')
-end
+% HRF params
+x0(nParams-2:nParams) = mu; % FLOBS eigen1, 2, 3
 
 end
 
