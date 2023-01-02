@@ -28,7 +28,7 @@ fVal = std(signal - obj.forward(x));
 lassoRegularization = obj.lassoRegularization;
 nFilterBins = obj.nFilterBins;
 nFixedParamsAdapt = obj.nFixedParamsAdapt;
-% nFixedParamsOther = obj.nFixedParamsOther;
+
 penalty = lassoRegularization * sum(abs(x(nFixedParamsAdapt+1:nFixedParamsAdapt+nFilterBins)))/nFilterBins;
 fVal = fVal + penalty;
 

@@ -202,6 +202,9 @@ classdef heading < handle
             
             % Define the fix and float param sets. We will always search
             % over the nFixedParamsOther and the nFilterBins
+            obj.fixSet = {1:obj.nParams-3, 1:obj.nParams-3};
+            obj.floatSet = {obj.nParams-2:obj.nParams, obj.nParams-2:obj.nParams};
+
             floatSet = [obj.nFixedParamsAdapt+1:obj.nFixedParamsAdapt+obj.nFilterBins];
             fixSet = [];
 

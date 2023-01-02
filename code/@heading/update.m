@@ -16,9 +16,9 @@ function x0 = update(obj,x,x0,floatSet,signal)
 %                           model at the time of the start of the
 %                           just-completed search
 %   floatSet              - Vector of index values that indicate the
-%                           mapping of vector x into vector x0 
+%                           mapping of vector x into vector x0
 %   signal                - 1 x time vector. The data to be fit. This
-%                           variable is unused in the simple updating case. 
+%                           variable is unused in the simple updating case.
 %
 % Outputs:
 %   x0                    - Vector of the entire set of parameters of the

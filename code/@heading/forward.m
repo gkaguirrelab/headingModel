@@ -85,14 +85,7 @@ if all(x(nParams-2:nParams)==0)
     hrf = zeros(size(obj.flobsbasis,1),1);
     hrf(1)=1;
 else
-    switch obj.hrfType
-        case 'flobs'
-            hrf = makeFlobsHRF(x(nParams-2:nParams), obj.flobsbasis);
-        case 'gamma'
-            hrf = makeGammaHRF(x(nParams-2:nParams), obj.stimDeltaT);
-        otherwise
-            error('Not a recognized HRF type')
-    end
+    hrf = makeFlobsHRF(x(nParams-2:nParams), obj.flobsbasis);
 end
 
 % Store the hrf in the object
@@ -116,35 +109,6 @@ end
 
 
 %% LOCAL FUNCTIONS
-
-function hrf = makeGammaHRF(x, stimDeltaT)
-
-% Construct an HRF
-gamma1 = x(1);
-gamma2 = x(2);
-undershootGain = x(3);
-duration = 28; % Fixed value in seconds to match FLOBS vector lengths
-
-% Define a timebase at the data resolution
-timebase = 0:stimDeltaT:duration;
-
-% Create the double gamma function
-g1 = gampdf(timebase,gamma1, 1);
-g1 = g1./ max(g1);
-g2 = gampdf(timebase, gamma2, 1);
-g2 = (g2/ max(g2)) * undershootGain;
-hrf = g1 - g2;
-
-% Set to zero at onset
-hrf = hrf - hrf(1);
-
-% Normalize the kernel to have unit area.
-hrf = hrf/sum(abs(hrf));
-
-% Make the hrf a column vector
-hrf = hrf';
-
-end
 
 
 function hrf = makeFlobsHRF(x, flobsbasis)
