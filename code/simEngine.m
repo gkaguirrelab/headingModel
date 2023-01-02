@@ -64,16 +64,21 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
     simEngine(4,1,fixedParams,0.05);
 %}
 %{
+    % Recover adaptation and heading direction effects
+    fixedParams = [1 1 15];
+    [x0,x1]=simEngine(4,0.5,fixedParams,0.05);
+%}
+%{
     % Set some fixed parameters, and see if we can recover them, including
     % an interpolated preferred heading direction.
-    fixedParams = [1 1 0.9];
+    fixedParams = [1.5 1 15];
     nBins = 45;
     useRealHeading = true; hrfSearch = false; adaptSearch = true;
     [x0, x1] = simEngine(1,1e-6,fixedParams,0.05,nBins,nBins,...
         useRealHeading,hrfSearch,adaptSearch);
     fprintf('simulated and recovered adaptation gain: [%2.2f, %2.2f] \n',x0(1),x1(1));
     fprintf('simulated and recovered adaptation exponent: [%2.2f, %2.2f] \n',x0(2),x1(2));
-    fprintf('simulated and recovered mu: [%2.2f, %2.2f] \n',x0(3),x1(3));
+    fprintf('simulated and recovered tau: [%2.2f, %2.2f] \n',x0(3),x1(3));
     % Obtain the interpolated peak of the preferred heading direction
     binSupportFit = 1:0.01:nBins;
     directionSupportFit = linspace(0,2*pi-(2*pi/nBins),length(binSupportFit));

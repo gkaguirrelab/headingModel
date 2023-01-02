@@ -36,16 +36,11 @@ x0(1) = 0; % gain
 x0(2) = 1; % exponent
 x0(3) = 1; % tau=1 (in seconds) of the exponential integrator of heading direction
 
-x0(nFixedParamsAdapt+1:nFixedParamsAdapt+nFilterBins) = 0;       % zero initial gain for direction filter bank
+% zero initial gain for direction filter bank
+x0(nFixedParamsAdapt+1:nFixedParamsAdapt+nFilterBins) = 0;
 
-switch obj.hrfType
-    case 'flobs'
-        x0(nParams-2:nParams) = mu; % FLOBS eigen1, 2, 3
-    case 'gamma'
-        x0(nParams-2:nParams) = [6, 10, 0.1]; % Gamma params
-    otherwise
-        error('Not a valid hrfType')
-end
+% HRF params
+x0(nParams-2:nParams) = mu; % FLOBS eigen1, 2, 3
 
 end
 

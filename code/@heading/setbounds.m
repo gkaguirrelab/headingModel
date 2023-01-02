@@ -38,8 +38,8 @@ ub(1) = Inf;              % gain
 
 % Raise the heading change to an exponent to support compressive /
 % expansive non-linearities
-lb(2) = 0.1; %0.1;             % exponent
-ub(2) = 3; %3;              % exponent
+lb(2) = 1; %0.1;             % exponent
+ub(2) = 1; %3;              % exponent
 
 % The tau parameter of the exponential integrator of heading change
 % in unites of seconds
@@ -51,33 +51,21 @@ ub(3) = 20;
 lb(nFixedParamsAdapt+1:nFixedParamsAdapt+nFilterBins) = -Inf; % gain of this filter
 ub(nFixedParamsAdapt+1:nFixedParamsAdapt+nFilterBins) = Inf;  % gain of this filter
 
-% The HRF shape parameters vary by model type
-switch obj.hrfType
-    case 'flobs'
-        
-        % Object properties associated with the FLOBS eigenvectors
-        mu = obj.mu;
-        C = obj.C;
-        
-        % Set bounds at +-5SDs of the norm distributions of the FLOBS
-        % parameters
-        sd15 = 5*diag(C)';
-        
-        lb(nParams-2:nParams) = mu-sd15;	% FLOBS eigen1, 2, 3
-        ub(nParams-2:nParams) = mu+sd15;	% FLOBS eigen1, 2, 3
+% Object properties associated with the FLOBS eigenvectors
+mu = obj.mu;
+C = obj.C;
 
-        % Lock the 3rd parameter; we find that the HRF search is
-        % over-fitting the data
-        lb(nParams) = mu(3);
-        ub(nParams) = mu(3);
+% Set bounds at +-5SDs of the norm distributions of the FLOBS
+% parameters
+sd15 = 5*diag(C)';
 
-    case 'gamma'
-        lb(nParams-2:nParams) = [2 6 0];	% Gamma1,2, and undershoot gain
-        ub(nParams-2:nParams) = [8 12 2];	% Gamma1,2, and undershoot gain
+lb(nParams-2:nParams) = mu-sd15;	% FLOBS eigen1, 2, 3
+ub(nParams-2:nParams) = mu+sd15;	% FLOBS eigen1, 2, 3
 
-    otherwise
-        error('Not a valid hrfType')
-end
+% Lock the 3rd parameter; we find that the HRF search is
+% over-fitting the data
+lb(nParams) = mu(3);
+ub(nParams) = mu(3);
 
 % Store the bounds in the object
 obj.lb = lb;

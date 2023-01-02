@@ -35,8 +35,8 @@ tau = x(3);         % Time constant of the temporal integration
 %% Build a model of absolute heading direction
 % Use the stored filter bank from the object properties.
 % Apply the filter weights as a single matrix multiplication.
-FilterWeights=x(nFixedParamsAdapt+1:end-3);
-neuralSignal = sum(filterResponse.*FilterWeights, 2);
+filterWeights=x(nFixedParamsAdapt+1:end-3);
+neuralSignal = sum(filterResponse.*filterWeights, 2);
 
 
 %% Load or create the headingChange
@@ -79,17 +79,13 @@ headingChange = headingChange.^epsilon;
 % Scale the stimulus matrix by the gain parameter
 neuralSignal = neuralSignal + headingChange*adaptGain;
 
-% Create the HRF. First, check to see if we have all zeros for the hrf
-% params, in which case the hrf is a delta function.
-if all(x(nParams-2:nParams)==0)
+% Create the HRF 
+if all(x(nParams-2:nParams)==0) % We want a delta function
     hrf = zeros(size(obj.flobsbasis,1),1);
     hrf(1)=1;
 else
     hrf = makeFlobsHRF(x(nParams-2:nParams), obj.flobsbasis);
 end
-
-% Store the hrf in the object
-obj.hrf = hrf;
 
 % Convolve the neuralSignal by the hrf, respecting acquisition boundaries
 fit = conv2run(neuralSignal,hrf,stimAcqGroups);

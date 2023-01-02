@@ -85,9 +85,6 @@ classdef heading < handle
         % A time x 1 vector that defines the HRF convolution kernel
         hrf
         
-        % The type of HRF model, including {'flobs','gamma'};
-        hrfType
-
         % The lasso regression penalty for the bin weights
         lassoRegularization
 
@@ -149,7 +146,6 @@ classdef heading < handle
             p.addParameter('typicalGain',300,@isscalar);
             p.addParameter('nFilterBins',8,@isscalar);
             p.addParameter('adaptSearch',true,@islogical);            
-            p.addParameter('hrfType','flobs',@ischar);            
             p.addParameter('hrfSearch',true,@islogical);            
             p.addParameter('lassoRegularization',0.05,@isscalar);           
             p.addParameter('verbose',true,@islogical);
@@ -302,7 +298,6 @@ classdef heading < handle
             obj.payload = p.Results.payload;
             obj.polyDeg = p.Results.polyDeg;
             obj.typicalGain = p.Results.typicalGain;
-            obj.hrfType = p.Results.hrfType;
             obj.verbose = p.Results.verbose;
             
             % Create and cache the flobs basis
