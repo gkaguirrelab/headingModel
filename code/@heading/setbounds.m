@@ -43,11 +43,9 @@ ub(2) = 3; %3;              % exponent
 
 % The tau parameter of the exponential integrator of heading change
 % in unites of seconds
-% lb(3) = 1e-2;
-% ub(3) = 10;
-% The muu parameter of the adaptation effect between 0 and 1
-lb(3) = 0;
-ub(3) = 1;
+lb(3) = 1e-2;
+ub(3) = 20;
+
 % These are the parameters that define a filter bank of absolute effect of
 % preferred heading direction
 lb(nFixedParamsAdapt+1:nFixedParamsAdapt+nFilterBins) = -Inf; % gain of this filter
@@ -61,12 +59,17 @@ switch obj.hrfType
         mu = obj.mu;
         C = obj.C;
         
-        % Set bounds at +-15SDs of the norm distributions of the FLOBS
+        % Set bounds at +-5SDs of the norm distributions of the FLOBS
         % parameters
-        sd15 = 15*diag(C)';
+        sd15 = 5*diag(C)';
         
         lb(nParams-2:nParams) = mu-sd15;	% FLOBS eigen1, 2, 3
         ub(nParams-2:nParams) = mu+sd15;	% FLOBS eigen1, 2, 3
+
+        % Lock the 3rd parameter; we find that the HRF search is
+        % over-fitting the data
+        lb(nParams) = mu(3);
+        ub(nParams) = mu(3);
 
     case 'gamma'
         lb(nParams-2:nParams) = [2 6 0];	% Gamma1,2, and undershoot gain

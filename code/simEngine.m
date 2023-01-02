@@ -60,7 +60,7 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
     % Now demonstrate that with a veridical heading effect, the fit
     % recovers the bin weights well, even in the presence of substantial
     % noise
-    fixedParams = [0 1];
+    fixedParams = [0 1 5];
     simEngine(4,1,fixedParams,0.05);
 %}
 %{
