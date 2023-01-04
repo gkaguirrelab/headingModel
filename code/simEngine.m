@@ -86,7 +86,7 @@ function [x0, x1] = simEngine(noiseScale,binWeightMax,fixedParamVector,lassoRegu
 %{
     % Set some fixed parameters, and see if we can recover them, including
     % an interpolated preferred heading direction.
-    fixedParams = [1.5 1 15];
+    fixedParams = [1.5 1 6];
     nBins = 45;
     [x0, x1] = simEngine(1,1,fixedParams,'hrfSearch',false);
     fprintf('simulated and recovered adaptation gain: [%2.2f, %2.2f] \n',x0(1),x1(1));
